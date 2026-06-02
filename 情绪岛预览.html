@@ -1,0 +1,3961 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>情绪岛小程序预览</title>
+  <style>
+    :root {
+      --screen-w: min(100vw, 430px, calc(46.258vh - 16.65px));
+      --olive: #9aaa46;
+      --blue: #6db8e8;
+      --green: #8ccc9a;
+      --text: #2d3237;
+      --muted: #7b7f84;
+      --line: #edf0ef;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      background: #eef6f5;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: start center;
+      padding: 18px 0;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      position: relative;
+      width: var(--screen-w);
+      aspect-ratio: 853 / 1844;
+      overflow: hidden;
+      border-radius: clamp(24px, 8.5vw, 36px);
+      background: #f7faf8;
+      box-shadow: 0 22px 80px rgba(60, 86, 92, 0.22);
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .screen-image,
+    .picker-image,
+    .transition-ghost {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      border: 0;
+    }
+
+    .screen-image {
+      z-index: 1;
+    }
+
+    .screen-image[hidden],
+    .detail-page[hidden],
+    .edit-page[hidden] {
+      display: none;
+    }
+
+    .transition-ghost {
+      z-index: 2;
+      pointer-events: none;
+      animation: oldSceneOut 620ms ease both;
+    }
+
+    .hit {
+      position: absolute;
+      z-index: 5;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      appearance: none;
+      background: rgba(255, 255, 255, 0);
+      color: transparent;
+      outline: none;
+    }
+
+    .hit:focus-visible,
+    .plain-button:focus-visible,
+    .chip:focus-visible,
+    .scene-option:focus-visible,
+    .strength-dot:focus-visible {
+      outline: 2px solid rgba(111, 160, 224, 0.7);
+      outline-offset: 2px;
+    }
+
+    .plus-hit {
+      left: 79.6%;
+      top: 76.5%;
+      width: 17%;
+      height: 9.2%;
+      border-radius: 999px;
+    }
+
+    .time-capsule-hit {
+      left: 6%;
+      top: 65%;
+      width: 20%;
+      height: 10%;
+      border-radius: 999px;
+    }
+
+    .sound-hit {
+      left: 82%;
+      top: 17.2%;
+      width: 13%;
+      height: 7%;
+      border-radius: 999px;
+    }
+
+    .nav-hit {
+      top: 88%;
+      height: 11.3%;
+      border-radius: 22px;
+    }
+
+    .nav-island { left: 4%; width: 29%; }
+    .nav-social { left: 35.5%; width: 29%; }
+    .nav-profile { left: 67%; width: 29%; }
+
+    .record-card-hit {
+      left: 5.4%;
+      top: 15.6%;
+      width: 89%;
+      height: 16.7%;
+      border-radius: 18px;
+    }
+
+    .record-edit-hit {
+      left: 79%;
+      top: 17.3%;
+      width: 14.5%;
+      height: 5.2%;
+      border-radius: 14px;
+    }
+
+    .record-row-hit {
+      left: 5.5%;
+      width: 89%;
+      height: 8.4%;
+      border-radius: 16px;
+    }
+
+    .record-row-one { top: 38.4%; }
+    .record-row-two { top: 47.7%; }
+
+    .record-sort-hit {
+      left: 82%;
+      top: 34.1%;
+      width: 12%;
+      height: 4%;
+      border-radius: 10px;
+    }
+
+    .profile-action-hit {
+      left: 6.5%;
+      width: 87%;
+      height: 5.7%;
+      border-radius: 14px;
+    }
+
+    .profile-settings-hit { left: 85%; top: 7.8%; width: 10%; height: 5.6%; border-radius: 999px; }
+    .profile-emotion-record-hit { left: 6.5%; top: 17%; width: 87%; height: 7%; border-radius: 16px; }
+    .profile-history-record-hit { left: 6.5%; top: 25%; width: 87%; height: 7%; border-radius: 16px; }
+    .profile-friends-hit { top: 43%; }
+    .profile-add-hit { top: 48.7%; }
+    .profile-message-hit { top: 54.4%; }
+    .profile-favorites-hit { top: 61.7%; }
+    .profile-trash-hit { top: 67.4%; }
+    .profile-help-hit { top: 74.7%; }
+
+    .ios-bar {
+      height: 5.7%;
+      padding: 4.6% 7.7% 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: calc(var(--screen-w) * 0.036);
+      color: #070707;
+    }
+
+    .ios-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: calc(var(--screen-w) * 0.028);
+    }
+
+    .page-header {
+      height: 5.2%;
+      padding: 0 5.5%;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.12) 1fr calc(var(--screen-w) * 0.13);
+      align-items: center;
+    }
+
+    .plain-button {
+      border: 0;
+      background: transparent;
+      color: #23272b;
+      padding: 0;
+    }
+
+    .back-button {
+      font-size: calc(var(--screen-w) * 0.058);
+      line-height: 1;
+      text-align: left;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: calc(var(--screen-w) * 0.052);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .save-button {
+      color: var(--olive);
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .menu-button {
+      text-align: right;
+      font-size: calc(var(--screen-w) * 0.055);
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .detail-page,
+    .edit-page {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      background: linear-gradient(180deg, #f8fbfa 0%, #ffffff 100%);
+      color: var(--text);
+    }
+
+    .detail-scroll,
+    .edit-scroll {
+      height: 89.1%;
+      overflow-y: auto;
+      padding: 1.5% 3.8% 13.5%;
+      scrollbar-width: none;
+    }
+
+    .detail-scroll::-webkit-scrollbar,
+    .edit-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .soft-card {
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 10px 28px rgba(68, 84, 88, 0.08);
+    }
+
+    .record-detail-card {
+      padding: 5.3% 4.3% 4.5%;
+    }
+
+    .record-head {
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.14) 1fr auto;
+      gap: calc(var(--screen-w) * 0.03);
+      align-items: center;
+      padding-bottom: 4.2%;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .face {
+      width: calc(var(--screen-w) * 0.12);
+      height: calc(var(--screen-w) * 0.12);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--screen-w) * 0.072);
+      line-height: 1;
+      background: #93cff5;
+      color: #111;
+    }
+
+    .face.calm {
+      background: #abe3b9;
+    }
+
+    .mood-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: calc(var(--screen-w) * 0.047);
+      font-weight: 700;
+    }
+
+    .strength {
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: #eef8ff;
+      color: #4b98d4;
+      font-size: calc(var(--screen-w) * 0.029);
+      font-weight: 600;
+    }
+
+    .strength.calm {
+      background: #f0faef;
+      color: #89a84d;
+    }
+
+    .time {
+      margin-top: 5px;
+      color: #777;
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .edit-pill,
+    .record-pill {
+      min-width: calc(var(--screen-w) * 0.16);
+      min-height: calc(var(--screen-w) * 0.072);
+      border: 1px solid #eef0ef;
+      border-radius: 14px;
+      background: #fff;
+      color: #3f4448;
+      box-shadow: 0 8px 18px rgba(80, 90, 94, 0.05);
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .detail-section {
+      padding: 4.4% 0;
+      border-bottom: 1px solid #f0f1f0;
+    }
+
+    .detail-section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .detail-section button {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      color: inherit;
+    }
+
+    .detail-label {
+      margin-bottom: 2.5%;
+      font-size: calc(var(--screen-w) * 0.035);
+      font-weight: 700;
+    }
+
+    .detail-value {
+      color: #3d4246;
+      font-size: calc(var(--screen-w) * 0.036);
+      line-height: 1.65;
+      word-break: break-word;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 5px 13px;
+      border-radius: 999px;
+      color: #55729d;
+      background: #f1f5ff;
+      font-size: calc(var(--screen-w) * 0.031);
+    }
+
+    .scene-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .scene-icon {
+      width: calc(var(--screen-w) * 0.07);
+      height: calc(var(--screen-w) * 0.07);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #d8f2eb;
+      color: #6c8481;
+      font-size: calc(var(--screen-w) * 0.04);
+      flex: 0 0 auto;
+    }
+
+    .chevron {
+      margin-left: auto;
+      color: #a3a3a3;
+      font-size: calc(var(--screen-w) * 0.04);
+    }
+
+    .status-card {
+      margin-top: 3.2%;
+      padding: 4.5%;
+    }
+
+    .status-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3%;
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 700;
+    }
+
+    .status-time {
+      margin-top: -2%;
+      margin-bottom: 3%;
+      color: #777;
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .related-card {
+      border: 0;
+      width: 100%;
+      border-radius: 16px;
+      background: #fbfcfa;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.12) 1fr;
+      gap: 13px;
+      align-items: center;
+      padding: 4%;
+      text-align: left;
+      color: inherit;
+    }
+
+    .tip-card {
+      margin-top: 3.2%;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.13) 1fr calc(var(--screen-w) * 0.22);
+      gap: 12px;
+      align-items: center;
+      padding: 4.5%;
+    }
+
+    .tip-star {
+      width: calc(var(--screen-w) * 0.1);
+      height: calc(var(--screen-w) * 0.1);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: #ffd55d;
+      clip-path: polygon(50% 0, 61% 33%, 96% 33%, 68% 53%, 79% 88%, 50% 67%, 21% 88%, 32% 53%, 4% 33%, 39% 33%);
+      font-size: calc(var(--screen-w) * 0.035);
+    }
+
+    .tip-title {
+      font-weight: 700;
+      margin-bottom: 5px;
+      font-size: calc(var(--screen-w) * 0.036);
+    }
+
+    .tip-text {
+      color: #333;
+      line-height: 1.55;
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .tip-island {
+      height: calc(var(--screen-w) * 0.075);
+      border-radius: 50% 50% 30% 30%;
+      background: radial-gradient(circle at 50% 0, #8ccf6b, #d9f1da 70%);
+    }
+
+    .detail-actions {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      bottom: 2.8%;
+      z-index: 18;
+      height: 8%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4%;
+      align-items: center;
+      padding: 2% 3%;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 -6px 26px rgba(76, 93, 96, 0.08);
+    }
+
+    .action-button {
+      height: calc(var(--screen-w) * 0.08);
+      border: 1px solid #eef0ef;
+      border-radius: 12px;
+      background: #fff;
+      color: #4b4f53;
+      font-size: calc(var(--screen-w) * 0.031);
+    }
+
+    .action-button.export {
+      border-color: #c8d18a;
+      color: var(--olive);
+    }
+
+    .edit-card {
+      padding: 3.8% 4.3% 3.5%;
+    }
+
+    .edit-emotion {
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.13) 1fr;
+      gap: calc(var(--screen-w) * 0.025);
+      align-items: center;
+      padding-bottom: 3.2%;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .strength-control {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .strength-dot {
+      width: calc(var(--screen-w) * 0.05);
+      height: calc(var(--screen-w) * 0.05);
+      border: 1px solid #dbe3c0;
+      border-radius: 50%;
+      background: #fff;
+      color: #9aaa46;
+      font-size: calc(var(--screen-w) * 0.025);
+      padding: 0;
+    }
+
+    .strength-dot.active {
+      background: var(--olive);
+      color: #fff;
+      border-color: var(--olive);
+    }
+
+    .edit-section {
+      margin-top: 3.4%;
+    }
+
+    .edit-label {
+      display: block;
+      font-size: calc(var(--screen-w) * 0.033);
+      font-weight: 700;
+      margin-bottom: 1.4%;
+    }
+
+    .edit-sub {
+      margin-top: -1%;
+      margin-bottom: 1.5%;
+      color: #9a9a9a;
+      font-size: calc(var(--screen-w) * 0.03);
+    }
+
+    .field-wrap {
+      position: relative;
+    }
+
+    .edit-textarea {
+      width: 100%;
+      min-height: calc(var(--screen-w) * 0.178);
+      border: 1.5px solid #afbd78;
+      border-radius: 14px;
+      padding: calc(var(--screen-w) * 0.03) calc(var(--screen-w) * 0.04) calc(var(--screen-w) * 0.06);
+      resize: none;
+      outline: none;
+      color: #555;
+      background: #fff;
+      line-height: 1.55;
+      font-size: calc(var(--screen-w) * 0.034);
+    }
+
+    .edit-textarea.small {
+      min-height: calc(var(--screen-w) * 0.145);
+    }
+
+    .counter {
+      position: absolute;
+      right: 14px;
+      bottom: 8px;
+      color: #777;
+      font-size: calc(var(--screen-w) * 0.028);
+      pointer-events: none;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      position: relative;
+      min-width: calc(var(--screen-w) * 0.148);
+      min-height: calc(var(--screen-w) * 0.064);
+      border: 1px solid #ecefee;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #555;
+      padding: 0 calc(var(--screen-w) * 0.018);
+      font-size: calc(var(--screen-w) * 0.032);
+      box-shadow: 0 8px 18px rgba(80, 90, 94, 0.05);
+    }
+
+    .chip.selected {
+      border-color: #cdd8a1;
+      color: var(--olive);
+      background: #fbfcf5;
+    }
+
+    .chip.selected::after {
+      content: "✓";
+      position: absolute;
+      right: 5px;
+      top: 4px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #a9be65;
+      color: white;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .scene-search {
+      height: calc(var(--screen-w) * 0.105);
+      border: 1px solid #eef0ef;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 11px;
+      color: #8c8c8c;
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(82, 95, 95, 0.03);
+    }
+
+    .scene-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: calc(var(--screen-w) * 0.008);
+      margin-top: calc(var(--screen-w) * 0.012);
+    }
+
+    .scene-option {
+      min-height: calc(var(--screen-w) * 0.112);
+      border: 1px solid #eef0ef;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #555;
+      display: grid;
+      place-items: center;
+      padding: 4px 1px;
+      box-shadow: 0 8px 18px rgba(80, 90, 94, 0.05);
+    }
+
+    .scene-option.selected {
+      border-color: #aebc72;
+      color: var(--olive);
+      background: #fbfcf5;
+    }
+
+    .scene-option-icon {
+      font-size: calc(var(--screen-w) * 0.038);
+      line-height: 1.1;
+    }
+
+    .scene-option-name {
+      font-size: calc(var(--screen-w) * 0.023);
+      white-space: nowrap;
+    }
+
+    .picker {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .picker.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .picker-image {
+      z-index: 31;
+    }
+
+    .emotion-hit,
+    .close-hit {
+      z-index: 32;
+    }
+
+    .emotion-hit {
+      width: 22%;
+      height: 14.4%;
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+    }
+
+    .pick-happy { left: 20.5%; top: 66.4%; }
+    .pick-anxious { left: 50%; top: 66.4%; }
+    .pick-calm { left: 79.5%; top: 66.4%; }
+    .pick-angry { left: 35%; top: 81.4%; }
+    .pick-sad { left: 65%; top: 81.4%; }
+
+    .close-hit {
+      left: 42.8%;
+      top: 88.2%;
+      width: 14.8%;
+      height: 8.2%;
+      border-radius: 999px;
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .app-shell.is-changing .screen-image { animation: newSceneIn 760ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .app-shell.is-changing .fx-layer { opacity: 1; }
+    .app-shell.fx-angry { animation: islandShake 520ms ease both; }
+
+    .fx-layer span {
+      position: absolute;
+      display: block;
+      opacity: 0;
+    }
+
+    .fx-happy .fx-layer span {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255, 208, 90, 0.8);
+      box-shadow: 0 0 22px rgba(255, 211, 95, 0.9);
+      animation: warmFloat 820ms ease-out both;
+    }
+
+    .fx-calm .fx-layer span {
+      width: 30px;
+      height: 30px;
+      border: 2px solid rgba(109, 205, 187, 0.5);
+      border-radius: 50%;
+      animation: calmRipple 900ms ease-out both;
+    }
+
+    .fx-anxious .fx-layer span {
+      width: 9px;
+      height: 18px;
+      border-radius: 60% 0 60% 0;
+      background: rgba(217, 155, 66, 0.74);
+      transform: rotate(35deg);
+      animation: leafDrift 900ms ease-out both;
+    }
+
+    .fx-sad .fx-layer span {
+      width: 2px;
+      height: 64px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+      transform: rotate(14deg);
+      animation: rainDrop 820ms linear both;
+    }
+
+    .fx-angry .fx-layer span {
+      width: 7px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(255, 105, 71, 0.72);
+      box-shadow: 0 0 12px rgba(255, 120, 70, 0.75);
+      animation: emberRise 780ms ease-out both;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 11.5%;
+      z-index: 50;
+      max-width: 76%;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(43, 48, 52, 0.78);
+      color: #fff;
+      font-size: 15px;
+      line-height: 1.35;
+      text-align: center;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      animation: toastIn 1800ms ease both;
+      white-space: nowrap;
+    }
+
+    .mood-card-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    .mood-card-modal.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mood-card {
+      width: 85%;
+      max-width: 320px;
+      border-radius: 24px;
+      padding: 12% 8% 10%;
+      text-align: center;
+      color: #2d3237;
+      transform: scale(0.9) translateY(20px);
+      opacity: 0;
+      transition: all 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .mood-card-modal.is-open .mood-card {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .mood-card-happy {
+      background: linear-gradient(180deg, #ffd4d4 0%, #ffb3b3 100%);
+    }
+
+    .mood-card-anxious {
+      background: linear-gradient(180deg, #ffe4b5 0%, #ffd494 100%);
+    }
+
+    .mood-card-calm {
+      background: linear-gradient(180deg, #b2e8e8 0%, #8ee0e0 100%);
+    }
+
+    .mood-card-angry {
+      background: linear-gradient(180deg, #ffb3b3 0%, #ff8080 100%);
+    }
+
+    .mood-card-sad {
+      background: linear-gradient(180deg, #b3cde0 0%, #8fb3d0 100%);
+    }
+
+    .mood-card-text {
+      font-family: 'ZCOOL KuaiLe', cursive, 'PingFang SC', sans-serif;
+      font-size: calc(var(--screen-w) * 0.055);
+      line-height: 1.65;
+      margin-bottom: 8%;
+      white-space: pre-line;
+    }
+
+    .mood-card-illustration {
+      font-size: calc(var(--screen-w) * 0.18);
+      line-height: 1;
+      margin-bottom: 6%;
+    }
+
+    .mood-card-close {
+      position: absolute;
+      right: 6%;
+      top: 5%;
+      width: calc(var(--screen-w) * 0.09);
+      height: calc(var(--screen-w) * 0.09);
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      color: #666;
+      font-size: calc(var(--screen-w) * 0.05);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .mood-card-save {
+      margin-top: 8%;
+      padding: 6% 12%;
+      border: none;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #555;
+      font-size: calc(var(--screen-w) * 0.038);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .mood-card-save:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .mood-card-input-wrap {
+      margin-top: 6%;
+      position: relative;
+    }
+
+    .mood-card-input {
+      width: 100%;
+      min-height: calc(var(--screen-w) * 0.22);
+      padding: 4% 5%;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.5);
+      font-size: calc(var(--screen-w) * 0.035);
+      line-height: 1.5;
+      color: #333;
+      resize: none;
+      outline: none;
+    }
+
+    .mood-card-input::placeholder {
+      color: #888;
+    }
+
+    .mood-card-input:focus {
+      border-color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .mood-card-counter {
+      position: absolute;
+      right: 8px;
+      bottom: 6px;
+      font-size: calc(var(--screen-w) * 0.028);
+      color: #666;
+    }
+
+    .tree-hole-page {
+      position: absolute;
+      inset: 0;
+      z-index: 55;
+      background: linear-gradient(180deg, rgba(34, 80, 45, 0.85) 0%, rgba(20, 50, 30, 0.9) 100%);
+      display: none;
+      overflow: hidden;
+    }
+
+    .tree-hole-page.is-open {
+      display: block;
+    }
+
+    .tree-hole-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tree-hint {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 999px;
+      color: rgba(255, 255, 220, 0.9);
+      font-size: calc(var(--screen-w) * 0.035);
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    .tree-trunk {
+      position: relative;
+      width: 35%;
+      height: 45%;
+      background: linear-gradient(90deg, #4a3728 0%, #6b4f3a 30%, #5c4330 70%, #3d2d20 100%);
+      border-radius: 20% 20% 40% 40%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .tree-trunk::before {
+      content: '';
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 15%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      border-radius: 50%;
+    }
+
+    .tree-hollow {
+      position: relative;
+      width: 45%;
+      height: 55%;
+      background: radial-gradient(ellipse at center, #1a1008 0%, #2d1f12 60%, #4a3525 100%);
+      border-radius: 50% 50% 45% 45%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .tree-hollow-glow {
+      position: absolute;
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(ellipse at center, rgba(255, 200, 100, 0.4) 0%, rgba(255, 180, 80, 0.2) 30%, transparent 70%);
+      border-radius: 50%;
+      animation: hollowGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes hollowGlow {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+
+    .tree-crown {
+      position: absolute;
+      top: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 30%;
+      background: radial-gradient(ellipse at 50% 80%, #2d5a27 0%, #1e4020 40%, transparent 70%);
+      border-radius: 50% 50% 40% 40%;
+      pointer-events: none;
+    }
+
+    .tree-hole-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .tree-hole-modal.is-open {
+      display: flex;
+    }
+
+    .tree-hole-content {
+      width: 85%;
+      max-width: 340px;
+      background: linear-gradient(180deg, #fef9e7 0%, #fdf3d0 100%);
+      border-radius: 24px;
+      padding: 8% 6%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .tree-hole-modal.is-open .tree-hole-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .tree-hole-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6%;
+      font-size: calc(var(--screen-w) * 0.045);
+      font-weight: 600;
+      color: #5a4a30;
+    }
+
+    .tree-hole-icon {
+      font-size: calc(var(--screen-w) * 0.06);
+    }
+
+    .tree-hole-input {
+      width: 100%;
+      height: 120px;
+      padding: 12px;
+      border: 2px solid rgba(139, 115, 85, 0.3);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      font-size: calc(var(--screen-w) * 0.038);
+      line-height: 1.6;
+      color: #4a3a20;
+      resize: none;
+      outline: none;
+      transition: border-color 200ms ease;
+    }
+
+    .tree-hole-input:focus {
+      border-color: rgba(139, 115, 85, 0.6);
+    }
+
+    .tree-hole-input::placeholder {
+      color: #a09080;
+    }
+
+    .tree-hole-counter {
+      text-align: right;
+      margin-top: 4px;
+      margin-bottom: 6%;
+      font-size: calc(var(--screen-w) * 0.03);
+      color: #8a7a60;
+    }
+
+    .tree-hole-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .tree-hole-cancel,
+    .tree-hole-submit {
+      padding: 6% 10%;
+      border: none;
+      border-radius: 12px;
+      font-size: calc(var(--screen-w) * 0.038);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .tree-hole-cancel {
+      background: rgba(150, 140, 120, 0.2);
+      color: #6a5a40;
+    }
+
+    .tree-hole-cancel:hover {
+      background: rgba(150, 140, 120, 0.3);
+    }
+
+    .tree-hole-submit {
+      background: linear-gradient(135deg, #7cb342, #558b2f);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(85, 139, 47, 0.3);
+    }
+
+    .tree-hole-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(85, 139, 47, 0.4);
+    }
+
+    .tree-hole-submit:active {
+      transform: translateY(0);
+    }
+
+    .tree-hole-absorbing {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .tree-hole-absorbing.is-open {
+      display: flex;
+    }
+
+    .tree-hole-text-absorb {
+      font-size: calc(var(--screen-w) * 0.05);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      animation: textAbsorb 2s ease-in-out forwards;
+    }
+
+    @keyframes textAbsorb {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    .tree-hole-response {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 30, 15, 0.9);
+    }
+
+    .tree-hole-response.is-open {
+      display: flex;
+    }
+
+    .tree-hole-firefly {
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #ffffaa 0%, #ffff66 30%, #ffcc00 60%, transparent 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 20px #ffcc00, 0 0 40px #ffff66;
+      animation: fireflyFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes fireflyFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+      25% { transform: translate(10px, -15px) scale(1.1); opacity: 1; }
+      50% { transform: translate(-5px, -25px) scale(0.9); opacity: 0.9; }
+      75% { transform: translate(-10px, -10px) scale(1.05); opacity: 1; }
+    }
+
+    .tree-hole-message {
+      margin-top: 30px;
+      padding: 16px 24px;
+      background: rgba(255, 255, 240, 0.1);
+      border-radius: 16px;
+      color: rgba(255, 255, 220, 0.95);
+      font-size: calc(var(--screen-w) * 0.045);
+      line-height: 1.6;
+      text-align: center;
+      max-width: 80%;
+      opacity: 0;
+      animation: messageAppear 500ms ease forwards;
+    }
+
+    @keyframes messageAppear {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .time-capsule-page {
+      position: absolute;
+      inset: 0;
+      z-index: 70;
+      background: linear-gradient(180deg, #87ceeb 0%, #e0f4ff 50%, #b8d4e8 100%);
+      color: var(--text);
+      display: none;
+      overflow: hidden;
+    }
+
+    .time-capsule-page.is-open {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .time-capsule-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .time-capsule-sea {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .time-capsule-markers {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 20px 30px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+    }
+
+    .time-capsule-marker {
+      flex-shrink: 0;
+      width: 60px;
+      height: 80px;
+      background: linear-gradient(180deg, rgba(255, 248, 240, 0.95) 0%, rgba(255, 240, 220, 0.9) 100%);
+      border-radius: 12px 12px 16px 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 300ms ease;
+      border: 2px solid transparent;
+    }
+
+    .time-capsule-marker:hover,
+    .time-capsule-marker.active {
+      transform: translateY(-10px);
+      border-color: rgba(255, 180, 100, 0.6);
+      box-shadow: 0 8px 24px rgba(255, 180, 100, 0.3);
+    }
+
+    .time-capsule-marker.has-record {
+      background: linear-gradient(180deg, #fff8e8 0%, #ffecd0 100%);
+    }
+
+    .time-capsule-marker-date {
+      font-size: calc(var(--screen-w) * 0.028);
+      color: #888;
+      margin-bottom: 2px;
+    }
+
+    .time-capsule-marker-day {
+      font-size: calc(var(--screen-w) * 0.045);
+      font-weight: 700;
+      color: #5a4a30;
+    }
+
+    .time-capsule-marker-weather {
+      font-size: calc(var(--screen-w) * 0.05);
+      margin-top: 4px;
+    }
+
+    .time-capsule-viewer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      transition: all 500ms ease;
+    }
+
+    .time-capsule-date {
+      font-size: calc(var(--screen-w) * 0.04);
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .time-capsule-weather {
+      font-size: calc(var(--screen-w) * 0.12);
+      margin-bottom: 12px;
+      transition: all 500ms ease;
+    }
+
+    .time-capsule-mood {
+      font-size: calc(var(--screen-w) * 0.05);
+      font-weight: 600;
+      color: #5a6a5a;
+      margin-bottom: 8px;
+    }
+
+    .time-capsule-record {
+      font-size: calc(var(--screen-w) * 0.035);
+      color: #666;
+      line-height: 1.5;
+      max-height: 60px;
+      overflow: hidden;
+    }
+
+    .time-capsule-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .time-capsule-prev,
+    .time-capsule-next {
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      color: #666;
+      font-size: 24px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 200ms ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .time-capsule-prev:hover,
+    .time-capsule-next:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
+
+    .time-capsule-month {
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 600;
+      color: #5a5a5a;
+    }
+
+    .time-capsule-instruction {
+      text-align: center;
+      padding: 8px;
+      font-size: calc(var(--screen-w) * 0.03);
+      color: #888;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .weather-sunny .time-capsule-weather { color: #ffb800; }
+    .weather-cloudy .time-capsule-weather { color: #a0a0a0; }
+    .weather-rainy .time-capsule-weather { color: #6ba3d6; }
+    .weather-snowy .time-capsule-weather { color: #c8e6f0; }
+    .weather-foggy .time-capsule-weather { color: #b0b0b0; }
+
+    .social-page {
+      position: absolute;
+      inset: 0;
+      z-index: 65;
+      background: linear-gradient(180deg, #fef9f0 0%, #fff8f0 100%);
+      color: var(--text);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .social-page.is-open {
+      display: flex;
+    }
+
+    .social-back-btn {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      color: #e07a5f;
+      font-size: calc(var(--screen-w) * 0.06);
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 200ms ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .social-back-btn:hover {
+      background: #fff;
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .social-back-btn:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    .social-tabs {
+      display: flex;
+      padding: 16px 20px 0;
+      gap: 8px;
+    }
+
+    .social-tab {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px 20px 0 0;
+      background: rgba(150, 140, 130, 0.2);
+      color: #666;
+      font-size: calc(var(--screen-w) * 0.038);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .social-tab.active {
+      background: #fff8f0;
+      color: #e07a5f;
+      box-shadow: 0 -2px 10px rgba(224, 122, 95, 0.1);
+    }
+
+    .social-content {
+      flex: 1;
+      background: #fff8f0;
+      overflow-y: auto;
+      padding-bottom: 100px;
+    }
+
+    .social-panel {
+      padding: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .social-panel.hidden {
+      display: none;
+    }
+
+    .ai-tip {
+      font-size: calc(var(--screen-w) * 0.035);
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .ai-input {
+      width: 100%;
+      height: 120px;
+      padding: 14px;
+      border: 2px solid rgba(224, 122, 95, 0.2);
+      border-radius: 16px;
+      background: #fff;
+      font-size: calc(var(--screen-w) * 0.038);
+      line-height: 1.6;
+      color: #333;
+      resize: none;
+      outline: none;
+      transition: border-color 200ms ease;
+    }
+
+    .ai-input:focus {
+      border-color: rgba(224, 122, 95, 0.5);
+    }
+
+    .ai-input::placeholder {
+      color: #aaa;
+    }
+
+    .ai-counter {
+      text-align: right;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      font-size: calc(var(--screen-w) * 0.03);
+      color: #aaa;
+    }
+
+    .ai-styles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ai-style-btn {
+      padding: 8px 16px;
+      border: 2px solid rgba(224, 122, 95, 0.3);
+      border-radius: 999px;
+      background: transparent;
+      color: #e07a5f;
+      font-size: calc(var(--screen-w) * 0.034);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .ai-style-btn.active {
+      background: #e07a5f;
+      border-color: #e07a5f;
+      color: #fff;
+    }
+
+    .ai-transform-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #e07a5f, #d35a4a);
+      color: #fff;
+      font-size: calc(var(--screen-w) * 0.042);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 200ms ease;
+      box-shadow: 0 4px 16px rgba(224, 122, 95, 0.3);
+    }
+
+    .ai-transform-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(224, 122, 95, 0.4);
+    }
+
+    .ai-transform-btn:active {
+      transform: translateY(0);
+    }
+
+    .ai-transform-loading {
+      animation: loadingDots 1s infinite;
+    }
+
+    @keyframes loadingDots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .ai-results {
+      margin-top: 20px;
+    }
+
+    .ai-result-bubble {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      position: relative;
+    }
+
+    .ai-result-content {
+      font-size: calc(var(--screen-w) * 0.038);
+      line-height: 1.7;
+      color: #333;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+    }
+
+    .ai-result-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .ai-result-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(224, 122, 95, 0.1);
+      color: #e07a5f;
+      font-size: calc(var(--screen-w) * 0.032);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 200ms ease;
+    }
+
+    .ai-result-btn:hover {
+      background: rgba(224, 122, 95, 0.2);
+    }
+
+    .tree-hole-chat-intro {
+      text-align: center;
+      padding: 30px 0;
+    }
+
+    .tree-intro-icon {
+      font-size: 60px;
+      margin-bottom: 12px;
+    }
+
+    .tree-intro-text {
+      font-size: calc(var(--screen-w) * 0.04);
+      color: #888;
+    }
+
+    .tree-mood-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .tree-mood-tag {
+      padding: 10px 18px;
+      border: 2px solid rgba(80, 140, 100, 0.3);
+      border-radius: 999px;
+      background: rgba(80, 140, 100, 0.05);
+      color: #508c64;
+      font-size: calc(var(--screen-w) * 0.034);
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .tree-mood-tag:hover,
+    .tree-mood-tag.selected {
+      background: rgba(80, 140, 100, 0.15);
+      border-color: rgba(80, 140, 100, 0.6);
+    }
+
+    .tree-find-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #6b9b7a, #508c64);
+      color: #fff;
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(80, 140, 100, 0.3);
+      transition: all 200ms ease;
+    }
+
+    .tree-find-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(80, 140, 100, 0.4);
+    }
+
+    .tree-matching {
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .tree-radar {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      border: 3px solid rgba(80, 140, 100, 0.4);
+      border-radius: 50%;
+      position: relative;
+      animation: radarPulse 2s ease-in-out infinite;
+    }
+
+    .tree-radar::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(80, 140, 100, 0.3) 30deg, transparent 60deg);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: radarSweep 2s linear infinite;
+    }
+
+    @keyframes radarPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    @keyframes radarSweep {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .tree-matching-text {
+      font-size: calc(var(--screen-w) * 0.038);
+      color: #888;
+      animation: matchingText 1.5s ease-in-out infinite;
+    }
+
+    @keyframes matchingText {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .tree-chat {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 200px);
+    }
+
+    .tree-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(80, 140, 100, 0.1);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tree-chat-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #6b9b7a, #508c64);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .tree-chat-info {
+      flex: 1;
+    }
+
+    .tree-chat-name {
+      font-size: calc(var(--screen-w) * 0.038);
+      font-weight: 600;
+      color: #333;
+    }
+
+    .tree-chat-timer {
+      font-size: calc(var(--screen-w) * 0.032);
+      color: #888;
+    }
+
+    .tree-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .tree-message {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      animation: messageAppear 300ms ease;
+    }
+
+    .tree-message.from-other {
+      flex-direction: row;
+    }
+
+    .tree-message.from-me {
+      flex-direction: row-reverse;
+    }
+
+    .tree-message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #8ba889, #6b9b7a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .tree-message.from-me .tree-message-avatar {
+      background: linear-gradient(135deg, #e07a5f, #d35a4a);
+    }
+
+    .tree-message-bubble {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #fff;
+      font-size: calc(var(--screen-w) * 0.036);
+      line-height: 1.5;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .tree-message.from-me .tree-message-bubble {
+      background: #e07a5f;
+      color: #fff;
+    }
+
+    .tree-chat-input-area {
+      display: flex;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .tree-chat-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid rgba(80, 140, 100, 0.2);
+      border-radius: 999px;
+      background: #fff;
+      font-size: calc(var(--screen-w) * 0.036);
+      outline: none;
+      transition: border-color 200ms ease;
+    }
+
+    .tree-chat-input:focus {
+      border-color: rgba(80, 140, 100, 0.5);
+    }
+
+    .tree-chat-send {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #6b9b7a, #508c64);
+      color: #fff;
+      font-size: calc(var(--screen-w) * 0.036);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    .tree-chat-send:hover {
+      transform: scale(1.05);
+    }
+
+    .tree-chat-end {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 500ms ease;
+    }
+
+    .tree-chat-end.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .tree-end-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .tree-end-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px;
+      animation: endContentAppear 500ms ease 200ms both;
+    }
+
+    @keyframes endContentAppear {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .tree-end-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .tree-end-message {
+      font-size: calc(var(--screen-w) * 0.045);
+      color: #fff;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      max-width: 280px;
+    }
+
+    .tree-end-flower {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff6b8a, #ff4757);
+      color: #fff;
+      font-size: calc(var(--screen-w) * 0.038);
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+      transition: all 200ms ease;
+    }
+
+    .tree-end-flower:hover {
+      transform: scale(1.05);
+    }
+
+    .tree-fab-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 120px;
+      width: 56px;
+      height: 56px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6b9b7a, #508c64);
+      color: #fff;
+      font-size: 28px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(80, 140, 100, 0.4);
+      z-index: 66;
+      transition: all 200ms ease;
+    }
+
+    .tree-fab-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .calendar-page {
+      position: absolute;
+      inset: 0;
+      z-index: 70;
+      background: linear-gradient(180deg, #f8fbfa 0%, #ffffff 100%);
+      color: var(--text);
+      display: none;
+    }
+
+    .calendar-page.is-open {
+      display: block;
+    }
+
+    .calendar-header {
+      height: 5.2%;
+      padding: 0 5.5%;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.12) 1fr calc(var(--screen-w) * 0.13);
+      align-items: center;
+    }
+
+    .calendar-scroll {
+      height: 94.8%;
+      overflow-y: auto;
+      padding: 3% 4% 5%;
+      scrollbar-width: none;
+    }
+
+    .calendar-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .calendar-month {
+      text-align: center;
+      font-size: calc(var(--screen-w) * 0.048);
+      font-weight: 700;
+      margin-bottom: 4%;
+      color: #333;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+
+    .calendar-weekday {
+      padding: 3% 0;
+      font-size: calc(var(--screen-w) * 0.028);
+      color: #999;
+      font-weight: 600;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #f5f5f5;
+      font-size: calc(var(--screen-w) * 0.034);
+      cursor: pointer;
+      transition: all 150ms ease;
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      background: #e8e8e8;
+    }
+
+    .calendar-day.today {
+      background: #e8f5e8;
+      font-weight: 700;
+    }
+
+    .calendar-day.has-record::after {
+      content: "";
+      position: absolute;
+      bottom: 4px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--olive);
+    }
+
+    .calendar-day .day-weather {
+      font-size: calc(var(--screen-w) * 0.025);
+      margin-top: 1px;
+    }
+
+    .calendar-record-detail {
+      margin-top: 5%;
+      padding: 5%;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 16px rgba(68, 84, 88, 0.08);
+    }
+
+    .calendar-record-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4%;
+      padding-bottom: 4%;
+      border-bottom: 1px solid #eee;
+    }
+
+    .calendar-record-face {
+      width: calc(var(--screen-w) * 0.1);
+      height: calc(var(--screen-w) * 0.1);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--screen-w) * 0.06);
+      background: #93cff5;
+    }
+
+    .calendar-record-info {
+      flex: 1;
+    }
+
+    .calendar-record-mood {
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 700;
+      color: #333;
+    }
+
+    .calendar-record-time {
+      font-size: calc(var(--screen-w) * 0.028);
+      color: #999;
+    }
+
+    .calendar-record-content {
+      font-size: calc(var(--screen-w) * 0.034);
+      line-height: 1.6;
+      color: #555;
+    }
+
+    .calendar-no-record {
+      text-align: center;
+      padding: 20% 0;
+      color: #999;
+      font-size: calc(var(--screen-w) * 0.036);
+    }
+
+    .emotion-record-button {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--screen-w) * 0.025);
+      padding: 4% 5%;
+      margin: 3% 0;
+      border: 1px solid #eef0ef;
+      border-radius: 14px;
+      background: #fff;
+      color: #3f4448;
+      font-size: calc(var(--screen-w) * 0.038);
+      box-shadow: 0 4px 12px rgba(80, 90, 94, 0.05);
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+
+    .emotion-record-button:active {
+      background: #f8f9f8;
+    }
+
+    .emotion-record-icon {
+      width: calc(var(--screen-w) * 0.08);
+      height: calc(var(--screen-w) * 0.08);
+      border-radius: 50%;
+      background: linear-gradient(135deg, #b2e8e8, #8ee0e0);
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--screen-w) * 0.04);
+    }
+
+    .calendar-entry-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 8% auto 5%;
+      padding: 5% 10%;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ffd55d, #ffb800);
+      color: #6b4c00;
+      font-size: calc(var(--screen-w) * 0.042);
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255, 176, 0, 0.35);
+      width: 80%;
+      text-align: center;
+    }
+
+    .calendar-entry-button:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 8px rgba(255, 176, 0, 0.25);
+    }
+
+    .calendar-entry-button-icon {
+      font-size: calc(var(--screen-w) * 0.05);
+    }
+
+    .calendar-content {
+      display: none;
+    }
+
+    .calendar-content.is-visible {
+      display: block;
+    }
+
+    .calendar-entry-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10%;
+    }
+
+    .calendar-entry-view.is-hidden {
+      display: none;
+    }
+
+    .calendar-entry-title {
+      font-size: calc(var(--screen-w) * 0.05);
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 3%;
+    }
+
+    .calendar-entry-subtitle {
+      font-size: calc(var(--screen-w) * 0.032);
+      color: #888;
+      margin-bottom: 6%;
+    }
+
+    @keyframes oldSceneOut {
+      0% { opacity: 1; transform: scale(1); filter: blur(0); }
+      100% { opacity: 0; transform: scale(0.982); filter: blur(4px); }
+    }
+
+    @keyframes newSceneIn {
+      0% { opacity: 0.18; transform: scale(1.035); filter: blur(5px) saturate(1.12); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0) saturate(1); }
+    }
+
+    @keyframes islandShake {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      16% { transform: translate3d(-2px, 1px, 0); }
+      34% { transform: translate3d(2px, -1px, 0); }
+      50% { transform: translate3d(-1px, -1px, 0); }
+      66% { transform: translate3d(1px, 1px, 0); }
+    }
+
+    @keyframes warmFloat {
+      0% { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.45); }
+      22% { opacity: 0.95; }
+      100% { opacity: 0; transform: translate3d(0, -90px, 0) scale(1.2); }
+    }
+
+    @keyframes calmRipple {
+      0% { opacity: 0.72; transform: scale(0.3); }
+      100% { opacity: 0; transform: scale(3.4); }
+    }
+
+    @keyframes leafDrift {
+      0% { opacity: 0; transform: translate3d(-10px, -20px, 0) rotate(10deg); }
+      20% { opacity: 0.88; }
+      100% { opacity: 0; transform: translate3d(46px, 150px, 0) rotate(220deg); }
+    }
+
+    @keyframes rainDrop {
+      0% { opacity: 0; transform: translate3d(0, -110px, 0) rotate(14deg); }
+      15% { opacity: 0.85; }
+      100% { opacity: 0; transform: translate3d(-54px, 360px, 0) rotate(14deg); }
+    }
+
+    @keyframes emberRise {
+      0% { opacity: 0; transform: translate3d(0, 78px, 0) scale(0.6); }
+      20% { opacity: 0.92; }
+      100% { opacity: 0; transform: translate3d(0, -140px, 0) scale(1.08); }
+    }
+
+    @keyframes toastIn {
+      0% { opacity: 0; transform: translate3d(-50%, 8px, 0); }
+      14%, 82% { opacity: 1; transform: translate3d(-50%, 0, 0); }
+      100% { opacity: 0; transform: translate3d(-50%, 8px, 0); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell" id="app" aria-label="情绪岛小程序预览">
+    <img class="screen-image" id="screenImage" src="assets/happy.jpg" alt="情绪岛首页" draggable="false" />
+    <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
+    <section class="detail-page" id="detailPage" aria-label="记录详情" hidden>
+      <div class="ios-bar"><span>9:41</span><span class="ios-icons">▮▮▮ ⌁ ▰</span></div>
+      <div class="page-header">
+        <button class="plain-button back-button" id="detailBackButton" type="button" aria-label="返回记录">‹</button>
+        <div class="page-title">记录详情</div>
+        <button class="plain-button menu-button" id="detailMoreButton" type="button" aria-label="更多">...</button>
+      </div>
+
+      <div class="detail-scroll" id="detailScroll">
+        <article class="soft-card record-detail-card">
+          <div class="record-head">
+            <div class="face" id="detailFace">☹</div>
+            <div>
+              <div class="mood-line">
+                <span id="detailMood">悲伤</span>
+                <span class="strength" id="detailStrength">强度 4/5</span>
+              </div>
+              <div class="time"><span id="detailDate">05月20日</span>　<span id="detailTime">14:30</span></div>
+            </div>
+            <button class="edit-pill" id="detailEditButton" type="button">✎ 编辑</button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="thought">
+              <div class="detail-label">当时的想法</div>
+              <div class="detail-value" id="detailThought"></div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="feelings">
+              <div class="detail-label">当时的感受</div>
+              <div class="tag-row" id="detailFeelings"></div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="scene">
+              <div class="detail-label">当时的场景</div>
+              <div class="scene-row">
+                <span class="scene-icon">⌂</span>
+                <span class="detail-value" id="detailScene"></span>
+                <span class="chevron">›</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="doing">
+              <div class="detail-label">当时在做什么</div>
+              <div class="detail-value" id="detailDoing"></div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="note">
+              <div class="detail-label">备注</div>
+              <div class="detail-value" id="detailNote"></div>
+            </button>
+          </div>
+        </article>
+
+        <section class="soft-card status-card">
+          <div class="status-title">
+            <span>此刻的状态</span>
+            <button class="record-pill" id="recordMomentButton" type="button">✎ 记录此刻</button>
+          </div>
+          <div class="status-time" id="relatedTime">05月19日　20:30</div>
+          <button class="related-card" id="relatedRecordCard" type="button">
+            <div class="face calm" id="relatedFace">⌣</div>
+            <div>
+              <div class="mood-line">
+                <span id="relatedMood">平静</span>
+                <span class="strength calm" id="relatedStrength">强度 2/5</span>
+              </div>
+              <div class="detail-value" id="relatedThought"></div>
+            </div>
+          </button>
+        </section>
+
+        <section class="soft-card tip-card">
+          <div class="tip-star">★</div>
+          <div>
+            <div class="tip-title">小贴士</div>
+            <div class="tip-text">难过的时候，允许自己慢慢来。深呼吸，给自己一个拥抱吧～</div>
+          </div>
+          <div class="tip-island"></div>
+        </section>
+      </div>
+
+      <div class="detail-actions">
+        <button class="action-button" id="deleteRecordButton" type="button">⌫ 删除记录</button>
+        <button class="action-button" id="shareRecordButton" type="button">↗ 分享记录</button>
+        <button class="action-button export" id="exportRecordButton" type="button">⇩ 导出记录</button>
+      </div>
+    </section>
+
+    <section class="edit-page" id="editPage" aria-label="编辑记录" hidden>
+      <div class="ios-bar"><span>9:41</span><span class="ios-icons">▮▮▮ ⌁ ▰</span></div>
+      <div class="page-header">
+        <button class="plain-button back-button" id="editBackButton" type="button" aria-label="返回详情">‹</button>
+        <div class="page-title">编辑记录</div>
+        <button class="plain-button save-button" id="editSaveButton" type="button">保存</button>
+      </div>
+
+      <div class="edit-scroll">
+        <div class="soft-card edit-card">
+          <div class="edit-emotion">
+            <div class="face" id="editFace">☹</div>
+            <div>
+              <div class="mood-line">
+                <span id="editMood">悲伤</span>
+                <span class="strength" id="editStrength">强度 4/5</span>
+              </div>
+              <div class="time"><span id="editDate">05月20日</span>　<span id="editTime">14:30</span></div>
+              <div class="strength-control" id="strengthControl"></div>
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <label class="edit-label" for="editThought">当时的想法</label>
+            <div class="field-wrap">
+              <textarea class="edit-textarea" id="editThought" maxlength="300"></textarea>
+              <span class="counter" id="thoughtCount">0/300</span>
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <div class="edit-label">当时的感受</div>
+            <div class="edit-sub">选择此刻的感受（可多选）</div>
+            <div class="chip-row" id="feelingChips"></div>
+          </div>
+
+          <div class="edit-section">
+            <div class="edit-label">当时的场景</div>
+            <div class="scene-search">
+              <span class="scene-icon">⌂</span>
+              <span id="sceneSearchText">选择或搜索场景</span>
+              <span class="chevron">⌄</span>
+            </div>
+            <div class="scene-grid" id="sceneGrid"></div>
+          </div>
+
+          <div class="edit-section">
+            <label class="edit-label" for="editDoing">当时在做什么</label>
+            <div class="field-wrap">
+              <textarea class="edit-textarea small" id="editDoing" maxlength="300"></textarea>
+              <span class="counter" id="doingCount">0/300</span>
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <label class="edit-label" for="editNote">备注</label>
+            <div class="field-wrap">
+              <textarea class="edit-textarea small" id="editNote" maxlength="300"></textarea>
+              <span class="counter" id="noteCount">0/300</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <button class="hit plus-hit" id="plusButton" type="button" aria-label="选择我的情绪"></button>
+    <button class="hit time-capsule-hit" id="timeCapsuleHit" type="button" aria-label="时间胶囊" hidden></button>
+    <button class="hit sound-hit" id="soundButton" type="button" aria-label="切换音效"></button>
+    <button class="hit nav-hit nav-island" id="navIsland" type="button" aria-label="岛屿"></button>
+    <button class="hit nav-hit nav-social" id="navSocial" type="button" aria-label="AI树洞"></button>
+    <button class="hit nav-hit nav-profile" id="navProfile" type="button" aria-label="我的"></button>
+    <button class="hit record-card-hit" id="recordCardHit" type="button" aria-label="查看记录详情" hidden></button>
+    <button class="hit record-edit-hit" id="recordEditHit" type="button" aria-label="编辑心情记录" hidden></button>
+    <button class="hit record-row-hit record-row-one" id="recordRowOne" type="button" aria-label="查看悲伤记录" hidden></button>
+    <button class="hit record-row-hit record-row-two" id="recordRowTwo" type="button" aria-label="查看平静记录" hidden></button>
+    <button class="hit record-sort-hit" id="recordSortHit" type="button" aria-label="切换记录排序" hidden></button>
+    <button class="hit profile-action-hit profile-settings-hit" data-toast="设置功能已响应" type="button" aria-label="设置" hidden></button>
+    <button class="hit profile-action-hit profile-emotion-record-hit" id="profileEmotionRecord" type="button" aria-label="情绪记录" hidden></button>
+    <button class="hit profile-action-hit profile-history-record-hit" id="profileHistoryRecord" type="button" aria-label="AI树洞" hidden></button>
+    <button class="hit profile-action-hit profile-friends-hit" data-toast="进入好友的岛屿功能已响应" type="button" aria-label="进入好友的岛屿" hidden></button>
+    <button class="hit profile-action-hit profile-add-hit" data-toast="添加好友功能已响应" type="button" aria-label="添加好友" hidden></button>
+    <button class="hit profile-action-hit profile-message-hit" data-toast="消息通知功能已响应" type="button" aria-label="消息通知" hidden></button>
+    <button class="hit profile-action-hit profile-favorites-hit" data-toast="收藏夹功能已响应" type="button" aria-label="收藏夹" hidden></button>
+    <button class="hit profile-action-hit profile-trash-hit" data-toast="回收站功能已响应" type="button" aria-label="回收站" hidden></button>
+    <button class="hit profile-action-hit profile-help-hit" data-toast="帮助与反馈功能已响应" type="button" aria-label="帮助与反馈" hidden></button>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <section class="picker" id="picker" aria-label="选择我的情绪" aria-hidden="true">
+      <img class="picker-image" src="assets/picker.jpg" alt="选择我的情绪弹窗" draggable="false" />
+      <button class="hit emotion-hit pick-happy" type="button" data-mood="happy" aria-label="开心"></button>
+      <button class="hit emotion-hit pick-anxious" type="button" data-mood="anxious" aria-label="焦虑"></button>
+      <button class="hit emotion-hit pick-calm" type="button" data-mood="calm" aria-label="平静"></button>
+      <button class="hit emotion-hit pick-angry" type="button" data-mood="angry" aria-label="愤怒"></button>
+      <button class="hit emotion-hit pick-sad" type="button" data-mood="sad" aria-label="悲伤"></button>
+      <button class="hit close-hit" id="closePicker" type="button" aria-label="关闭"></button>
+    </section>
+
+    <section class="mood-card-modal" id="moodCardModal" aria-label="情绪卡片" aria-hidden="true">
+      <div class="mood-card" id="moodCard">
+        <button class="mood-card-close" id="moodCardClose" type="button" aria-label="关闭">×</button>
+        <div class="mood-card-text" id="moodCardText"></div>
+        <div class="mood-card-illustration" id="moodCardIllustration"></div>
+        <div class="mood-card-input-wrap">
+          <textarea class="mood-card-input" id="moodCardInput" placeholder="请输入当天的心情和想要记录的事情" maxlength="200"></textarea>
+          <span class="mood-card-counter" id="moodCardCounter">0/200</span>
+        </div>
+        <button class="mood-card-save" id="moodCardSave" type="button">保存记录</button>
+      </div>
+    </section>
+
+    <section class="tree-hole-page" id="treeHolePage" aria-label="树洞" aria-hidden="true">
+      <div class="tree-hole-container" id="treeHoleContainer">
+        <div class="tree-hint" id="treeHint">点击树洞诉说心事</div>
+        <div class="tree-trunk" id="treeTrunk">
+          <div class="tree-hollow" id="treeHollow">
+            <div class="tree-hollow-glow"></div>
+          </div>
+        </div>
+        <div class="tree-crown" id="treeCrown"></div>
+      </div>
+      <div class="tree-hole-modal" id="treeHoleModal" aria-hidden="true">
+        <div class="tree-hole-content" id="treeHoleContent">
+          <div class="tree-hole-header">
+            <span class="tree-hole-icon">🌳</span>
+            <span>树洞倾听你的心声</span>
+          </div>
+          <textarea class="tree-hole-input" id="treeHoleInput" placeholder="在这里写下你的心事..." maxlength="200"></textarea>
+          <div class="tree-hole-counter"><span id="treeHoleCount">0</span>/200</div>
+          <div class="tree-hole-actions">
+            <button class="tree-hole-cancel" id="treeHoleCancel" type="button">算了</button>
+            <button class="tree-hole-submit" id="treeHoleSubmit" type="button">倾诉</button>
+          </div>
+        </div>
+        <div class="tree-hole-absorbing" id="treeHoleAbsorbing" aria-hidden="true">
+          <div class="tree-hole-text-absorb" id="treeHoleTextAbsorb"></div>
+        </div>
+        <div class="tree-hole-response" id="treeHoleResponse" aria-hidden="true">
+          <div class="tree-hole-firefly" id="treeHoleFirefly"></div>
+          <div class="tree-hole-message" id="treeHoleMessage"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="social-page" id="socialPage" aria-label="社交嘴替与树洞" aria-hidden="true">
+      <div class="ios-bar">
+        <button class="social-back-btn" id="socialBackBtn" type="button" aria-label="返回主页">‹</button>
+        <span>9:41</span>
+        <span class="ios-icons">▮▮▮ ⌁ ▰</span>
+      </div>
+      <div class="social-tabs">
+        <button class="social-tab active" id="socialTabAI" type="button">AI嘴替</button>
+        <button class="social-tab" id="socialTabTree" type="button">共鸣树洞</button>
+      </div>
+      <div class="social-content" id="socialContent">
+        <div class="social-panel" id="socialPanelAI">
+          <div class="ai-tip">把你想说的（哪怕是脏话）告诉我...</div>
+          <textarea class="ai-input" id="aiInput" placeholder="把你想说的（哪怕是脏话）告诉我..." maxlength="500"></textarea>
+          <div class="ai-counter"><span id="aiCount">0</span>/500</div>
+          <div class="ai-styles">
+            <button class="ai-style-btn active" data-style="eq" type="button">高情商</button>
+            <button class="ai-style-btn" data-style="humor" type="button">幽默</button>
+            <button class="ai-style-btn" data-style="formal" type="button">正式</button>
+            <button class="ai-style-btn" data-style="crazy" type="button">发疯文学</button>
+          </div>
+          <button class="ai-transform-btn" id="aiTransformBtn" type="button">
+            <span class="ai-transform-text">变身</span>
+            <div class="ai-transform-loading" id="aiLoading" hidden>...</div>
+          </button>
+          <div class="ai-results" id="aiResults"></div>
+        </div>
+        <div class="social-panel hidden" id="socialPanelTree">
+          <div class="tree-hole-chat-intro">
+            <div class="tree-intro-icon">🌳</div>
+            <div class="tree-intro-text">寻找同频的陌生人倾诉</div>
+          </div>
+          <div class="tree-mood-tags" id="treeMoodTags">
+            <button class="tree-mood-tag" data-tag="周一综合症"># 周一综合症</button>
+            <button class="tree-mood-tag" data-tag="焦虑不安"># 焦虑不安</button>
+            <button class="tree-mood-tag" data-tag="孤独感"># 孤独感</button>
+            <button class="tree-mood-tag" data-tag="工作压力"># 工作压力</button>
+            <button class="tree-mood-tag" data-tag="情感困惑"># 情感困惑</button>
+            <button class="tree-mood-tag" data-tag="失眠困扰"># 失眠困扰</button>
+          </div>
+          <button class="tree-find-btn" id="treeFindBtn" type="button">寻找共鸣</button>
+          <div class="tree-matching" id="treeMatching" hidden>
+            <div class="tree-radar" id="treeRadar"></div>
+            <div class="tree-matching-text">正在寻找同频的陌生人...</div>
+          </div>
+          <div class="tree-chat" id="treeChat" hidden>
+            <div class="tree-chat-header">
+              <div class="tree-chat-avatar" id="treeChatAvatar"></div>
+              <div class="tree-chat-info">
+                <div class="tree-chat-name" id="treeChatName"></div>
+                <div class="tree-chat-timer">⏳ <span id="treeTimer">15:00</span></div>
+              </div>
+            </div>
+            <div class="tree-chat-messages" id="treeChatMessages"></div>
+            <div class="tree-chat-input-area">
+              <input class="tree-chat-input" id="treeChatInput" type="text" placeholder="说点什么..." maxlength="100">
+              <button class="tree-chat-send" id="treeChatSend" type="button">发送</button>
+            </div>
+          </div>
+          <div class="tree-chat-end" id="treeChatEnd" hidden>
+            <div class="tree-end-overlay"></div>
+            <div class="tree-end-content">
+              <div class="tree-end-icon">🌸</div>
+              <div class="tree-end-message">陪伴时光已结束，祝你们在各自的世界里安好。</div>
+              <button class="tree-end-flower" id="treeEndFlower" type="button">送TA一朵小红花</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="tree-fab-btn" id="treeFabBtn" type="button" hidden>＋</button>
+    </section>
+
+    <section class="time-capsule-page" id="timeCapsulePage" aria-label="时间胶囊" aria-hidden="true">
+      <div class="ios-bar"><span>9:41</span><span class="ios-icons">▮▮▮ ⌁ ▰</span></div>
+      <div class="time-capsule-header">
+        <button class="plain-button back-button" id="timeCapsuleBackButton" type="button" aria-label="返回">‹</button>
+        <div class="page-title">时间胶囊</div>
+        <div></div>
+      </div>
+      <div class="time-capsule-sea" id="timeCapsuleSea">
+        <div class="time-capsule-markers" id="timeCapsuleMarkers"></div>
+        <div class="time-capsule-viewer" id="timeCapsuleViewer">
+          <div class="time-capsule-date" id="timeCapsuleDate"></div>
+          <div class="time-capsule-weather" id="timeCapsuleWeather"></div>
+          <div class="time-capsule-mood" id="timeCapsuleMood"></div>
+          <div class="time-capsule-record" id="timeCapsuleRecord"></div>
+        </div>
+      </div>
+      <div class="time-capsule-nav">
+        <button class="time-capsule-prev" id="timeCapsulePrev" type="button">‹</button>
+        <div class="time-capsule-month" id="timeCapsuleMonth"></div>
+        <button class="time-capsule-next" id="timeCapsuleNext" type="button">›</button>
+      </div>
+      <div class="time-capsule-instruction">向左或向右滑动查看不同日期</div>
+    </section>
+
+    <section class="calendar-page" id="calendarPage" aria-label="情绪记录日历" aria-hidden="true">
+      <div class="ios-bar"><span>9:41</span><span class="ios-icons">▮▮▮ ⌁ ▰</span></div>
+      <div class="calendar-header">
+        <button class="plain-button back-button" id="calendarBackButton" type="button" aria-label="返回">‹</button>
+        <div class="page-title">情绪记录</div>
+        <div></div>
+      </div>
+      <div class="calendar-scroll" id="calendarScroll">
+        <div class="calendar-entry-view" id="calendarEntryView">
+          <div class="calendar-entry-title">📅 情绪日历</div>
+          <div class="calendar-entry-subtitle">查看每日情绪变化</div>
+          <button class="calendar-entry-button" id="calendarEntryButton" type="button">
+            <span class="calendar-entry-button-icon">📆</span>
+            <span>打开日历</span>
+          </button>
+        </div>
+        <div class="calendar-content" id="calendarContent">
+          <div class="calendar-month" id="calendarMonth"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+          <div id="calendarRecordDetail"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const scenes = {
+      happy: "assets/happy.jpg",
+      anxious: "assets/anxious.jpg",
+      calm: "assets/calm.jpg",
+      angry: "assets/angry.jpg",
+      sad: "assets/sad.jpg",
+      social: "assets/social.jpg",
+      profile: "assets/profile.jpg"
+    };
+
+    const moodCards = {
+      happy: [
+        {
+          text: "把烦恼取关，\n把快乐列为特别喜欢",
+          illustration: "🌸😊🌸",
+          weather: "☀️",
+          island: "阳光明媚的快乐岛"
+        },
+        {
+          text: "今天的你，\n也是闪闪发光的存在",
+          illustration: "✨🌟✨",
+          weather: "☀️",
+          island: "星光闪耀的快乐岛"
+        },
+        {
+          text: "生活明朗，\n万物可爱，\n你也值得被爱",
+          illustration: "🌈🥰🌈",
+          weather: "🌈",
+          island: "彩虹环绕的快乐岛"
+        },
+        {
+          text: "微笑是最好的名片，\n今天的你笑起来真好看",
+          illustration: "🌻😊🌻",
+          weather: "☀️",
+          island: "向日葵盛开的快乐岛"
+        },
+        {
+          text: "小小的幸福，\n藏在每一个平凡的瞬间",
+          illustration: "🍀✨🍀",
+          weather: "🌤️",
+          island: "幸运四叶草的快乐岛"
+        }
+      ],
+      anxious: [
+        {
+          text: "允许自己暂时毫无斗志，\n心安理得做个废物人类",
+          illustration: "🐑😴🐑",
+          weather: "⛅",
+          island: "悠闲慵懒的焦虑岛"
+        },
+        {
+          text: "慢慢来，\n不着急，\n你已经很棒了",
+          illustration: "🐢🌿🐢",
+          weather: "🌫️",
+          island: "迷雾森林的焦虑岛"
+        },
+        {
+          text: "深呼吸，\n让思绪慢慢沉淀",
+          illustration: "💨🌊💨",
+          weather: "🌊",
+          island: "海浪轻拍的焦虑岛"
+        },
+        {
+          text: "焦虑只是提醒你，\n要更加温柔地对待自己",
+          illustration: "🌙💫🌙",
+          weather: "🌙",
+          island: "月光温柔的焦虑岛"
+        },
+        {
+          text: "给自己一点时间，\n一切都会好起来的",
+          illustration: "🌱🌿🌱",
+          weather: "🌧️",
+          island: "雨后新生的焦虑岛"
+        }
+      ],
+      calm: [
+        {
+          text: "今天的风，\n会吹走昨天的烦恼",
+          illustration: "🌀🐶💨",
+          weather: "🌤️",
+          island: "微风轻拂的平静岛"
+        },
+        {
+          text: "心如止水，\n静听花开的声音",
+          illustration: "🌸🌊🌸",
+          weather: "🌊",
+          island: "宁静海滩的平静岛"
+        },
+        {
+          text: "在喧嚣中寻一处静谧，\n与自己温柔相处",
+          illustration: "🌲🍃🌲",
+          weather: "🌤️",
+          island: "森林深处的平静岛"
+        },
+        {
+          text: "时光很慢，\n岁月很长，\n慢慢来",
+          illustration: "🕊️☁️🕊️",
+          weather: "☁️",
+          island: "云朵飘浮的平静岛"
+        },
+        {
+          text: "此刻的平静，\n是给明天最好的礼物",
+          illustration: "🌙✨🌙",
+          weather: "🌙",
+          island: "星空下的平静岛"
+        }
+      ],
+      angry: [
+        {
+          text: "愤怒是力量的火焰，\n学会用它照亮前路",
+          illustration: "🔥💪🔥",
+          weather: "⚡",
+          island: "火焰燃烧的愤怒岛"
+        },
+        {
+          text: "大声说出来，\n不要压抑自己",
+          illustration: "🗣️🌪️🗣️",
+          weather: "🌪️",
+          island: "风暴中心的愤怒岛"
+        },
+        {
+          text: "愤怒过后，\n是更强大的自己",
+          illustration: "🦅⚡🦅",
+          weather: "⚡",
+          island: "雄鹰翱翔的愤怒岛"
+        },
+        {
+          text: "你的情绪很重要，\n请认真对待每一份感受",
+          illustration: "❤️🔥❤️",
+          weather: "☀️",
+          island: "热情洋溢的愤怒岛"
+        },
+        {
+          text: "发泄过后，\n记得给自己一个拥抱",
+          illustration: "🤗🔥🤗",
+          weather: "🌅",
+          island: "夕阳如火的愤怒岛"
+        }
+      ],
+      sad: [
+        {
+          text: "允许自己哭泣，\n眼泪也是治愈的力量",
+          illustration: "💧🌧️💧",
+          weather: "🌧️",
+          island: "细雨绵绵的悲伤岛"
+        },
+        {
+          text: "难过的时候，\n记得有人在默默关心你",
+          illustration: "💝😊💝",
+          weather: "🌥️",
+          island: "温暖怀抱的悲伤岛"
+        },
+        {
+          text: "每一滴眼泪，\n都是成长的印记",
+          illustration: "💎💧💎",
+          weather: "🌙",
+          island: "泪光闪烁的悲伤岛"
+        },
+        {
+          text: "悲伤会过去，\n美好会到来",
+          illustration: "🌈💧🌈",
+          weather: "🌈",
+          island: "雨后彩虹的悲伤岛"
+        },
+        {
+          text: "你不是一个人，\n我们都在这里",
+          illustration: "🤝💙🤝",
+          weather: "🌊",
+          island: "相互陪伴的悲伤岛"
+        }
+      ]
+    };
+
+    const particlePresets = {
+      happy: [[17, 39, 0], [29, 48, 70], [44, 35, 130], [59, 46, 30], [75, 38, 100], [63, 61, 180], [37, 64, 210]],
+      anxious: [[9, 31, 0], [23, 38, 120], [48, 34, 60], [68, 43, 180], [85, 37, 80], [15, 52, 220], [73, 60, 160]],
+      calm: [[27, 39, 0], [50, 49, 100], [71, 42, 180], [39, 64, 240], [61, 67, 320]],
+      angry: [[50, 38, 0], [45, 41, 80], [54, 42, 160], [48, 46, 220], [57, 47, 280], [52, 51, 360]],
+      sad: [[14, 18, 0], [28, 15, 80], [42, 20, 160], [56, 16, 40], [70, 19, 120], [84, 14, 200], [21, 38, 260], [62, 35, 320]]
+    };
+
+    const baseRecords = {
+      sadToday: {
+        id: "sadToday",
+        mood: "悲伤",
+        moodKey: "sad",
+        face: "☹",
+        date: "05月20日",
+        time: "14:30",
+        strength: 4,
+        thought: "有点难过的一天... 💧",
+        feelings: ["失落", "孤单", "疲惫", "压力大"],
+        scene: "学校 · 教室",
+        doing: "写作业",
+        note: "和朋友吵架了，心里不太舒服。"
+      },
+      calmYesterday: {
+        id: "calmYesterday",
+        mood: "平静",
+        moodKey: "calm",
+        face: "⌣",
+        date: "05月19日",
+        time: "20:30",
+        strength: 2,
+        thought: "感觉好多了，和朋友和好了。和朋友聊了聊天，心情变好了～",
+        feelings: ["放松", "安心", "释然"],
+        scene: "家",
+        doing: "和朋友聊天",
+        note: "昨天慢慢说开了，心里轻松很多。"
+      }
+    };
+
+    const feelingLabels = ["失落", "孤单", "疲惫", "压力大", "难受", "委屈", "沮丧", "烦躁", "焦虑", "放松", "安心", "释然"];
+    const sceneLabels = [
+      ["学校", "🏫"], ["教室", "▰"], ["实验室", "⚗"], ["家", "⌂"],
+      ["图书馆", "▥"], ["电影院", "▣"], ["户外", "♣"], ["自定义", "+"]
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const app = $("app");
+    const screenImage = $("screenImage");
+    const detailPage = $("detailPage");
+    const editPage = $("editPage");
+    const detailScroll = $("detailScroll");
+    const fxLayer = $("fxLayer");
+    const picker = $("picker");
+    const toast = $("toast");
+    const moodCardModal = $("moodCardModal");
+    const moodCard = $("moodCard");
+    const moodCardText = $("moodCardText");
+    const moodCardIllustration = $("moodCardIllustration");
+    const moodCardInput = $("moodCardInput");
+    const moodCardCounter = $("moodCardCounter");
+    const moodCardSave = $("moodCardSave");
+    const moodCardClose = $("moodCardClose");
+    const calendarPage = $("calendarPage");
+    const calendarBackButton = $("calendarBackButton");
+    const profileEmotionRecord = $("profileEmotionRecord");
+    const profileHistoryRecord = $("profileHistoryRecord");
+    const plusButton = $("plusButton");
+    const soundButton = $("soundButton");
+    const navIsland = $("navIsland");
+    const navSocial = $("navSocial");
+    const navProfile = $("navProfile");
+    const closePicker = $("closePicker");
+    const recordHits = [$("recordCardHit"), $("recordEditHit"), $("recordRowOne"), $("recordRowTwo"), $("recordSortHit")];
+    const profileHits = Array.from(document.querySelectorAll(".profile-action-hit"));
+    const editThought = $("editThought");
+    const editDoing = $("editDoing");
+    const editNote = $("editNote");
+
+    let mood = localStorage.getItem("emotion-island-mood") || "happy";
+    let page = "island";
+    let isAnimating = false;
+    let currentRecordId = "sadToday";
+    let editingRecordId = "sadToday";
+    let editFocusField = "";
+    let toastTimer;
+    let records = structuredClone(baseRecords);
+    let editDraft = structuredClone(records.sadToday);
+    let emotionLogs = [];
+    let currentCalendarMonth = new Date();
+    let selectedCalendarDate = null;
+
+    const treeHolePage = $("treeHolePage");
+    const treeHoleModal = $("treeHoleModal");
+    const treeHoleInput = $("treeHoleInput");
+    const treeHoleCount = $("treeHoleCount");
+    const treeHoleCancel = $("treeHoleCancel");
+    const treeHoleSubmit = $("treeHoleSubmit");
+    const treeHoleAbsorbing = $("treeHoleAbsorbing");
+    const treeHoleTextAbsorb = $("treeHoleTextAbsorb");
+    const treeHoleResponse = $("treeHoleResponse");
+    const treeHoleMessage = $("treeHoleMessage");
+    const treeTrunk = $("treeTrunk");
+
+    const comfortingMessages = [
+      "亲爱的小岛居民，你的心事已经被风带走了~",
+      "大树听到了你的声音，愿你今晚好梦",
+      "把烦恼说给树洞吧，它会替你保密的",
+      "每一片落叶都是一次放下，来深呼吸",
+      "世界和我都在这里陪着你",
+      "情绪是访客，让它们来去自如",
+      "今天的云很轻，你的心也可以",
+      "树洞收到了你的心事，微笑会发芽的",
+      "不必强迫自己坚强，偶尔脆弱也没关系",
+      "你已经很努力了，给自己一个拥抱吧",
+      "夜空中每颗星都在为你闪耀",
+      "深呼吸，慢慢来，你比自己以为的更强大",
+      "树洞把温暖回响给你，要相信明天会更好",
+      "难过的时候，大树永远在这里等你",
+      "你是一颗独特的星球，值得被温柔以待",
+      "把悲伤交给大地，它会让你重新生长",
+      "月亮听见了你的心事，晚安",
+      "每一次倾诉都是一次自我疗愈",
+      "树洞回响：你是被爱着的",
+      "风雨过后，岛屿会更加美丽"
+    ];
+
+    const timeCapsulePage = $("timeCapsulePage");
+    const timeCapsuleSea = $("timeCapsuleSea");
+    const timeCapsuleMarkers = $("timeCapsuleMarkers");
+    const timeCapsuleViewer = $("timeCapsuleViewer");
+    const timeCapsuleDate = $("timeCapsuleDate");
+    const timeCapsuleWeather = $("timeCapsuleWeather");
+    const timeCapsuleMood = $("timeCapsuleMood");
+    const timeCapsuleRecord = $("timeCapsuleRecord");
+    const timeCapsuleMonth = $("timeCapsuleMonth");
+    const timeCapsulePrev = $("timeCapsulePrev");
+    const timeCapsuleNext = $("timeCapsuleNext");
+    const timeCapsuleBackButton = $("timeCapsuleBackButton");
+
+    const socialPage = $("socialPage");
+    const socialTabAI = $("socialTabAI");
+    const socialTabTree = $("socialTabTree");
+    const socialPanelAI = $("socialPanelAI");
+    const socialPanelTree = $("socialPanelTree");
+    const aiInput = $("aiInput");
+    const aiCount = $("aiCount");
+    const aiTransformBtn = $("aiTransformBtn");
+    const aiLoading = $("aiLoading");
+    const aiResults = $("aiResults");
+    const treeMoodTags = $("treeMoodTags");
+    const treeFindBtn = $("treeFindBtn");
+    const treeMatching = $("treeMatching");
+    const treeChat = $("treeChat");
+    const treeChatAvatar = $("treeChatAvatar");
+    const treeChatName = $("treeChatName");
+    const treeTimer = $("treeTimer");
+    const treeChatMessages = $("treeChatMessages");
+    const treeChatInput = $("treeChatInput");
+    const treeChatSend = $("treeChatSend");
+    const treeChatEnd = $("treeChatEnd");
+    const treeEndFlower = $("treeEndFlower");
+    const treeFabBtn = $("treeFabBtn");
+
+    let currentAIStyle = "eq";
+    let selectedMoodTag = null;
+    let chatTimer = null;
+    let chatTimeLeft = 900;
+    let currentChatPartner = null;
+    let chatMessages = [];
+
+    const randomNouns = ["一颗柠檬", "半朵云", "三根面条", "四片落叶", "五颗星星", "六只蚂蚁", "七秒记忆", "八分之一", "九尾猫", "十个月亮", "一只蜗牛", "半杯奶茶", "三朵棉花糖", "四颗糖果", "五片雪花"];
+    const randomEmojis = ["🌸", "🌼", "🌻", "🍀", "🌷", "💐", "🌺", "🪻", "🌹", "🏵️"];
+
+    const aiResponses = {
+      eq: [
+        "其实你已经很棒了，换个角度看会更精彩~",
+        "我理解你的感受，这种情绪很正常，给自己一点时间",
+        "不要太在意别人的看法，你值得被喜欢",
+        "每一天都是新的开始，相信明天会更好",
+        "你已经很努力了，适当放松一下也没关系"
+      ],
+      humor: [
+        "哈哈哈，这算什么，我上次踩到香蕉皮直接表演了一个原地后空翻",
+        "别慌，问题不大，实在不行就假装这是剧本，我们是主角",
+        "据说笑一笑十年少，所以你刚才那一下可能已经年轻了0.1岁？",
+        "生活就像海洋，只有意志坚定的人才能到达彼岸——到达彼岸后发现是海市蜃楼",
+        "别生气了，生气会变丑的，你这么好看怎么能变丑呢"
+      ],
+      formal: [
+        "感谢你的分享，建议你冷静分析问题根源，制定可行方案逐步解决",
+        "从客观角度来看，建议你先调整心态，再进行下一步计划",
+        "建议你做好时间管理，合理分配精力，效率会更高",
+        "从长远发展角度，建议你深思熟虑后再做决定",
+        "建议保持积极心态，这有助于问题的解决"
+      ],
+      crazy: [
+        "啊啊啊啊管他呢！人生就是要疯狂！疯疯癫癫才是真谛！",
+        "我要让所有人知道，这个世界被你承包了！！疯狂打call！！",
+        "不疯魔不成活！今天就要做最靓的疯子！冲鸭！！！",
+        "凭什么！凭什么！凭什么！我不服！我要反抗！我要自由！",
+        "哈哈哈哈哈哈哈哈哈管他的呢！先疯为敬！谁跟上！！！"
+      ]
+    };
+
+    let currentCapsuleMonth = new Date();
+    let selectedCapsuleDate = null;
+
+    const weatherTypes = ["sunny", "cloudy", "rainy", "snowy", "foggy"];
+    const weatherIcons = {
+      sunny: "☀️",
+      cloudy: "⛅",
+      rainy: "🌧️",
+      snowy: "❄️",
+      foggy: "🌫️"
+    };
+
+    try {
+      const savedRecords = JSON.parse(localStorage.getItem("emotion-island-records") || "null");
+      if (savedRecords) records = { ...records, ...savedRecords };
+      const savedLogs = JSON.parse(localStorage.getItem("emotion-island-logs") || "null");
+      if (savedLogs) emotionLogs = savedLogs;
+    } catch (error) {}
+
+    function saveEmotionLog(moodKey, content) {
+      const now = new Date();
+      const log = {
+        id: Date.now().toString(),
+        moodKey: moodKey,
+        mood: { happy: "开心", anxious: "焦虑", calm: "平静", angry: "愤怒", sad: "悲伤" }[moodKey] || "未知",
+        face: { happy: "☺", anxious: "😟", calm: "⌣", angry: "😠", sad: "☹" }[moodKey] || "?",
+        date: `${now.getMonth() + 1}月${now.getDate()}日`,
+        time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+        fullDate: now.toISOString().split('T')[0],
+        content: content,
+        weather: (moodCards[moodKey] && moodCards[moodKey][0]) ? moodCards[moodKey][0].weather : "☀️",
+        island: (moodCards[moodKey] && moodCards[moodKey][0]) ? moodCards[moodKey][0].island : ""
+      };
+      emotionLogs.unshift(log);
+      localStorage.setItem("emotion-island-logs", JSON.stringify(emotionLogs));
+      return log;
+    }
+
+    function getEmotionLogsByDate(dateStr) {
+      return emotionLogs.filter(log => log.fullDate === dateStr);
+    }
+
+    function renderCalendar() {
+      const year = currentCalendarMonth.getFullYear();
+      const month = currentCalendarMonth.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startWeekday = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+
+      const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+      $("calendarMonth").textContent = `${year}年${monthNames[month]}`;
+
+      const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+      let html = weekdays.map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+
+      for (let i = 0; i < startWeekday; i++) {
+        html += '<div class="calendar-day"></div>';
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasRecord = emotionLogs.some(log => log.fullDate === dateStr);
+        const isToday = dateStr === todayStr;
+        const dayLogs = getEmotionLogsByDate(dateStr);
+        const weather = dayLogs.length > 0 ? dayLogs[0].weather : '';
+        html += `<div class="calendar-day${isToday ? ' today' : ''}${hasRecord ? ' has-record' : ''}" data-date="${dateStr}">${day}<span class="day-weather">${weather}</span></div>`;
+      }
+
+      $("calendarGrid").innerHTML = html;
+
+      document.querySelectorAll(".calendar-day[data-date]").forEach(dayEl => {
+        dayEl.addEventListener("click", () => {
+          const dateStr = dayEl.dataset.date;
+          selectedCalendarDate = dateStr;
+          renderCalendarDetail(dateStr);
+        });
+      });
+
+      if (selectedCalendarDate) {
+        renderCalendarDetail(selectedCalendarDate);
+      } else if (emotionLogs.length > 0) {
+        renderCalendarDetail(emotionLogs[0].fullDate);
+      }
+    }
+
+    function renderCalendarDetail(dateStr) {
+      const logs = getEmotionLogsByDate(dateStr);
+      const detailEl = $("calendarRecordDetail");
+
+      if (logs.length === 0) {
+        detailEl.innerHTML = '<div class="calendar-no-record">这天没有情绪记录</div>';
+        return;
+      }
+
+      let html = '';
+      logs.forEach(log => {
+        const cards = moodCards[log.moodKey] || [];
+        const cardData = cards.length > 0 ? cards[0] : {};
+        html += `
+          <div class="calendar-record-detail">
+            <div class="calendar-record-header">
+              <div class="calendar-record-face">${log.face}</div>
+              <div class="calendar-record-info">
+                <div class="calendar-record-mood">${log.mood} - ${cardData.island || log.mood}</div>
+                <div class="calendar-record-time">${log.date} ${log.time} ${log.weather}</div>
+              </div>
+            </div>
+            <div class="calendar-record-content">${log.content || '暂无记录内容'}</div>
+          </div>
+        `;
+      });
+      detailEl.innerHTML = html;
+    }
+
+    function openCalendarPage() {
+      selectedCalendarDate = null;
+      $("calendarEntryView").classList.remove("is-hidden");
+      $("calendarContent").classList.remove("is-visible");
+      $("calendarPage").classList.add("is-open");
+      $("calendarPage").setAttribute("aria-hidden", "false");
+    }
+
+    function showCalendarContent() {
+      renderCalendar();
+      $("calendarEntryView").classList.add("is-hidden");
+      $("calendarContent").classList.add("is-visible");
+    }
+
+    function closeCalendarPage() {
+      $("calendarEntryView").classList.remove("is-hidden");
+      $("calendarContent").classList.remove("is-visible");
+      $("calendarPage").classList.remove("is-open");
+      $("calendarPage").setAttribute("aria-hidden", "true");
+    }
+
+    function openTreeHole() {
+      treeHolePage.classList.add("is-open");
+      treeHolePage.setAttribute("aria-hidden", "false");
+      treeHoleInput.value = "";
+      treeHoleCount.textContent = "0";
+    }
+
+    function closeTreeHole() {
+      treeHolePage.classList.remove("is-open");
+      treeHolePage.setAttribute("aria-hidden", "true");
+      treeHoleModal.classList.remove("is-open");
+      treeHoleAbsorbing.classList.remove("is-open");
+      treeHoleResponse.classList.remove("is-open");
+    }
+
+    function openTreeHoleModal() {
+      treeHoleModal.classList.add("is-open");
+      treeHoleModal.setAttribute("aria-hidden", "false");
+      setTimeout(() => treeHoleInput.focus(), 300);
+    }
+
+    function handleTreeHoleInput() {
+      treeHoleCount.textContent = treeHoleInput.value.length;
+    }
+
+    function submitTreeHole() {
+      const text = treeHoleInput.value.trim();
+      if (!text) {
+        treeHoleInput.focus();
+        return;
+      }
+
+      saveTreeHoleLog(text);
+
+      treeHoleModal.classList.remove("is-open");
+      treeHoleTextAbsorb.textContent = text;
+      treeHoleAbsorbing.classList.add("is-open");
+      treeHoleAbsorbing.setAttribute("aria-hidden", "false");
+
+      setTimeout(() => {
+        treeHoleAbsorbing.classList.remove("is-open");
+        treeHoleAbsorbing.setAttribute("aria-hidden", "true");
+
+        const randomMessage = comfortingMessages[Math.floor(Math.random() * comfortingMessages.length)];
+        treeHoleMessage.textContent = randomMessage;
+        treeHoleResponse.classList.add("is-open");
+        treeHoleResponse.setAttribute("aria-hidden", "false");
+
+        setTimeout(() => {
+          closeTreeHole();
+        }, 4000);
+      }, 2000);
+    }
+
+    function saveTreeHoleLog(content) {
+      const now = new Date();
+      const log = {
+        id: Date.now().toString(),
+        type: "treehole",
+        content: content,
+        date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+        time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+      };
+
+      let treeHoleLogs = JSON.parse(localStorage.getItem("tree-hole-logs") || "[]");
+      treeHoleLogs.unshift(log);
+      if (treeHoleLogs.length > 100) treeHoleLogs = treeHoleLogs.slice(0, 100);
+      localStorage.setItem("tree-hole-logs", JSON.stringify(treeHoleLogs));
+    }
+
+    function openTimeCapsule() {
+      selectedCapsuleDate = null;
+      renderTimeCapsuleMarkers();
+      updateTimeCapsuleMonth();
+      timeCapsulePage.classList.add("is-open");
+      timeCapsulePage.setAttribute("aria-hidden", "false");
+    }
+
+    function closeTimeCapsule() {
+      timeCapsulePage.classList.remove("is-open");
+      timeCapsulePage.setAttribute("aria-hidden", "true");
+    }
+
+    function renderTimeCapsuleMarkers() {
+      const year = currentCapsuleMonth.getFullYear();
+      const month = currentCapsuleMonth.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = new Date(year, month, 1).getDay();
+
+      timeCapsuleMarkers.innerHTML = "";
+
+      const logs = JSON.parse(localStorage.getItem("emotion-island-logs") || "[]");
+      const logDates = new Set(logs.map(l => l.fullDate));
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasRecord = logDates.has(dateStr);
+        const weather = getWeatherForDate(dateStr);
+        const isActive = selectedCapsuleDate === dateStr;
+
+        const marker = document.createElement("div");
+        marker.className = `time-capsule-marker${hasRecord ? ' has-record' : ''}${isActive ? ' active' : ''}`;
+        marker.innerHTML = `
+          <span class="time-capsule-marker-date">${getMonthShort(month)}</span>
+          <span class="time-capsule-marker-day">${day}</span>
+          <span class="time-capsule-marker-weather">${weatherIcons[weather]}</span>
+        `;
+        marker.dataset.date = dateStr;
+        marker.addEventListener("click", () => selectCapsuleDate(dateStr));
+        timeCapsuleMarkers.appendChild(marker);
+      }
+
+      timeCapsuleMarkers.scrollLeft = 0;
+    }
+
+    function selectCapsuleDate(dateStr) {
+      selectedCapsuleDate = dateStr;
+      const markers = timeCapsuleMarkers.querySelectorAll(".time-capsule-marker");
+      markers.forEach(m => m.classList.toggle("active", m.dataset.date === dateStr));
+
+      const logs = JSON.parse(localStorage.getItem("emotion-island-logs") || "[]");
+      const log = logs.find(l => l.fullDate === dateStr);
+
+      const [year, month, day] = dateStr.split("-").map(Number);
+      timeCapsuleDate.textContent = `${month}月${day}日`;
+
+      const weather = getWeatherForDate(dateStr);
+      timeCapsuleWeather.textContent = weatherIcons[weather];
+
+      if (log) {
+        timeCapsuleMood.textContent = `${log.face || ''} ${log.mood || '平静'}`;
+        timeCapsuleRecord.textContent = log.content || "这一天记录了心情";
+        timeCapsuleViewer.className = `time-capsule-viewer weather-${weather}`;
+      } else {
+        timeCapsuleMood.textContent = "无记录";
+        timeCapsuleRecord.textContent = "这一天没有记录心情";
+        timeCapsuleViewer.className = "time-capsule-viewer";
+      }
+    }
+
+    function getWeatherForDate(dateStr) {
+      const stored = localStorage.getItem(`weather-${dateStr}`);
+      if (stored) return stored;
+
+      const moods = ["happy", "anxious", "calm", "angry", "sad"];
+      const hash = dateStr.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      return weatherTypes[hash % weatherTypes.length];
+    }
+
+    function getMonthShort(month) {
+      const months = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+      return months[month];
+    }
+
+    function updateTimeCapsuleMonth() {
+      timeCapsuleMonth.textContent = `${currentCapsuleMonth.getFullYear()}年${currentCapsuleMonth.getMonth() + 1}月`;
+    }
+
+    function prevCapsuleMonth() {
+      currentCapsuleMonth.setMonth(currentCapsuleMonth.getMonth() - 1);
+      selectedCapsuleDate = null;
+      renderTimeCapsuleMarkers();
+      updateTimeCapsuleMonth();
+    }
+
+    function nextCapsuleMonth() {
+      currentCapsuleMonth.setMonth(currentCapsuleMonth.getMonth() + 1);
+      selectedCapsuleDate = null;
+      renderTimeCapsuleMarkers();
+      updateTimeCapsuleMonth();
+    }
+
+    function switchSocialTab(tab) {
+      if (tab === "ai") {
+        socialTabAI.classList.add("active");
+        socialTabTree.classList.remove("active");
+        socialPanelAI.classList.remove("hidden");
+        socialPanelTree.classList.add("hidden");
+      } else {
+        socialTabAI.classList.remove("active");
+        socialTabTree.classList.add("active");
+        socialPanelAI.classList.add("hidden");
+        socialPanelTree.classList.remove("hidden");
+      }
+    }
+
+    function openAITreeHole() {
+      setPage("social");
+      setTimeout(() => switchSocialTab("tree"), 50);
+    }
+
+    function handleAIInput() {
+      aiCount.textContent = aiInput.value.length;
+    }
+
+    function selectAIStyle(style) {
+      currentAIStyle = style;
+      document.querySelectorAll(".ai-style-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.style === style);
+      });
+    }
+
+    function transformAI() {
+      const text = aiInput.value.trim();
+      if (!text) {
+        aiInput.focus();
+        return;
+      }
+
+      aiLoading.hidden = false;
+      aiTransformBtn.querySelector(".ai-transform-text").textContent = "变身中...";
+      aiTransformBtn.disabled = true;
+
+      setTimeout(() => {
+        const responses = aiResponses[currentAIStyle];
+        const response = responses[Math.floor(Math.random() * responses.length)];
+
+        const bubble = document.createElement("div");
+        bubble.className = "ai-result-bubble";
+        bubble.innerHTML = `
+          <div class="ai-result-content">${response}</div>
+          <div class="ai-result-actions">
+            <button class="ai-result-btn copy-btn" data-text="${response}">📋 复制</button>
+            <button class="ai-result-btn refresh-btn">🔄 再润色一下</button>
+          </div>
+        `;
+
+        bubble.querySelector(".copy-btn").addEventListener("click", function() {
+          const textToCopy = this.dataset.text;
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast("已复制到剪贴板");
+          });
+        });
+
+        bubble.querySelector(".refresh-btn").addEventListener("click", function() {
+          const newResponse = responses[Math.floor(Math.random() * responses.length)];
+          bubble.querySelector(".ai-result-content").textContent = newResponse;
+          bubble.querySelector(".copy-btn").dataset.text = newResponse;
+        });
+
+        aiResults.insertBefore(bubble, aiResults.firstChild);
+
+        aiLoading.hidden = true;
+        aiTransformBtn.querySelector(".ai-transform-text").textContent = "变身";
+        aiTransformBtn.disabled = false;
+      }, 1500);
+    }
+
+    function selectMoodTag(tag) {
+      selectedMoodTag = tag;
+      document.querySelectorAll(".tree-mood-tag").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.tag === tag);
+      });
+    }
+
+    function startMatching() {
+      if (!selectedMoodTag) {
+        showToast("请先选择一个情绪标签");
+        return;
+      }
+
+      treeFindBtn.hidden = true;
+      treeMatching.hidden = false;
+
+      setTimeout(() => {
+        startChat();
+      }, 3000);
+    }
+
+    function startChat() {
+      treeMatching.hidden = true;
+      treeChat.hidden = false;
+
+      const partnerName = randomNouns[Math.floor(Math.random() * randomNouns.length)];
+      const partnerEmoji = randomEmojis[Math.floor(Math.random() * randomEmojis.length)];
+      const myName = randomNouns[Math.floor(Math.random() * randomNouns.length)];
+
+      currentChatPartner = { name: partnerName, emoji: partnerEmoji };
+      treeChatName.textContent = partnerName;
+      treeChatAvatar.textContent = partnerEmoji;
+
+      chatTimeLeft = 900;
+      chatMessages = [];
+      treeChatMessages.innerHTML = "";
+
+      const welcomeMsg = document.createElement("div");
+      welcomeMsg.className = "tree-message from-other";
+      welcomeMsg.innerHTML = `
+        <div class="tree-message-avatar">${partnerEmoji}</div>
+        <div class="tree-message-bubble">嗨~ 很高兴认识你，我们聊聊${selectedMoodTag}吧</div>
+      `;
+      treeChatMessages.appendChild(welcomeMsg);
+      chatMessages.push({ from: "other", text: `嗨~ 很高兴认识你，我们聊聊${selectedMoodTag}吧` });
+
+      chatTimer = setInterval(() => {
+        chatTimeLeft--;
+        const mins = Math.floor(chatTimeLeft / 60);
+        const secs = chatTimeLeft % 60;
+        treeTimer.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+
+        if (chatTimeLeft <= 0) {
+          endChat();
+        }
+      }, 1000);
+    }
+
+    function sendChatMessage() {
+      const text = treeChatInput.value.trim();
+      if (!text) return;
+
+      const myName = randomNouns[Math.floor(Math.random() * randomNouns.length)];
+      const myEmoji = randomEmojis[Math.floor(Math.random() * randomEmojis.length)];
+
+      const msgEl = document.createElement("div");
+      msgEl.className = "tree-message from-me";
+      msgEl.innerHTML = `
+        <div class="tree-message-avatar">${myEmoji}</div>
+        <div class="tree-message-bubble">${text}</div>
+      `;
+      treeChatMessages.appendChild(msgEl);
+      treeChatMessages.scrollTop = treeChatMessages.scrollHeight;
+      chatMessages.push({ from: "me", text });
+      treeChatInput.value = "";
+
+      setTimeout(() => {
+        const replies = [
+          "我懂你的感受...",
+          "谢谢你愿意分享",
+          "一起加油！",
+          "真的吗？说说看",
+          "抱抱你~",
+          "一切都会好起来的",
+          "你比我想象的要坚强",
+          "听着呢，继续说"
+        ];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        const replyEl = document.createElement("div");
+        replyEl.className = "tree-message from-other";
+        replyEl.innerHTML = `
+          <div class="tree-message-avatar">${currentChatPartner.emoji}</div>
+          <div class="tree-message-bubble">${reply}</div>
+        `;
+        treeChatMessages.appendChild(replyEl);
+        treeChatMessages.scrollTop = treeChatMessages.scrollHeight;
+        chatMessages.push({ from: "other", text: reply });
+      }, 1000 + Math.random() * 1000);
+    }
+
+    function endChat() {
+      clearInterval(chatTimer);
+      treeChat.hidden = true;
+      treeChatEnd.classList.add("is-open");
+    }
+
+    function closeChatEnd() {
+      treeChatEnd.classList.remove("is-open");
+      treeFindBtn.hidden = false;
+      selectedMoodTag = null;
+      document.querySelectorAll(".tree-mood-tag").forEach(btn => btn.classList.remove("selected"));
+    }
+
+    function currentRecord() {
+      return records[currentRecordId] || records.sadToday;
+    }
+
+    function relatedRecord() {
+      return currentRecordId === "calmYesterday" ? records.sadToday : records.calmYesterday;
+    }
+
+    function sceneForCurrentPage() {
+      if (page === "social") return scenes.happy;
+      if (page === "profile") return scenes.profile;
+      return scenes[mood];
+    }
+
+    function setPage(nextPage) {
+      page = nextPage;
+      render();
+    }
+
+    function render() {
+      const imagePage = page === "island" || page === "social" || page === "profile";
+      screenImage.hidden = !imagePage;
+      detailPage.hidden = page !== "detail";
+      editPage.hidden = page !== "edit";
+      if (imagePage) screenImage.src = sceneForCurrentPage();
+
+      socialPage.classList.toggle("is-open", page === "social");
+      plusButton.hidden = page !== "island";
+      soundButton.hidden = page !== "island";
+      if ($("timeCapsuleHit")) $("timeCapsuleHit").hidden = page !== "island";
+      navIsland.hidden = !imagePage;
+      navSocial.hidden = !imagePage;
+      navProfile.hidden = !imagePage;
+      recordHits.forEach((item) => { item.hidden = page !== "social"; });
+      profileHits.forEach((item) => { item.hidden = page !== "profile"; });
+      profileEmotionRecord.hidden = page !== "profile";
+      app.dataset.page = page;
+      app.dataset.mood = mood;
+
+      if (page === "detail") renderDetail();
+      if (page === "edit") renderEdit();
+    }
+
+    function renderDetail() {
+      const record = currentRecord();
+      const related = relatedRecord();
+      $("detailFace").textContent = record.face;
+      $("detailFace").classList.toggle("calm", record.moodKey === "calm");
+      $("detailMood").textContent = record.mood;
+      $("detailStrength").textContent = `强度 ${record.strength}/5`;
+      $("detailStrength").classList.toggle("calm", record.moodKey === "calm");
+      $("detailDate").textContent = record.date;
+      $("detailTime").textContent = record.time;
+      $("detailThought").textContent = record.thought || "点这里写下当时的想法";
+      $("detailScene").textContent = record.scene || "点这里选择场景";
+      $("detailDoing").textContent = record.doing || "点这里写下当时在做什么";
+      $("detailNote").textContent = record.note || "点这里补充备注";
+      $("detailFeelings").innerHTML = "";
+      (record.feelings || []).forEach((tag) => {
+        const item = document.createElement("span");
+        item.className = "tag";
+        item.textContent = tag;
+        $("detailFeelings").appendChild(item);
+      });
+      if (!record.feelings || !record.feelings.length) {
+        const item = document.createElement("span");
+        item.className = "detail-value";
+        item.textContent = "点这里选择心情标签";
+        $("detailFeelings").appendChild(item);
+      }
+
+      $("relatedTime").textContent = `${related.date}　${related.time}`;
+      $("relatedFace").textContent = related.face;
+      $("relatedFace").classList.toggle("calm", related.moodKey === "calm");
+      $("relatedMood").textContent = related.mood;
+      $("relatedStrength").textContent = `强度 ${related.strength}/5`;
+      $("relatedStrength").classList.toggle("calm", related.moodKey === "calm");
+      $("relatedThought").textContent = related.thought;
+    }
+
+    function renderEdit() {
+      $("editFace").textContent = editDraft.face;
+      $("editFace").classList.toggle("calm", editDraft.moodKey === "calm");
+      $("editMood").textContent = editDraft.mood;
+      $("editStrength").textContent = `强度 ${editDraft.strength}/5`;
+      $("editStrength").classList.toggle("calm", editDraft.moodKey === "calm");
+      $("editDate").textContent = editDraft.date;
+      $("editTime").textContent = editDraft.time;
+      editThought.value = editDraft.thought || "";
+      editDoing.value = editDraft.doing || "";
+      editNote.value = editDraft.note || "";
+      updateCounts();
+      renderStrength();
+      renderFeelingChips();
+      renderScenes();
+      if (editFocusField) {
+        const target = { thought: editThought, doing: editDoing, note: editNote }[editFocusField];
+        if (target) window.setTimeout(() => target.focus(), 30);
+        editFocusField = "";
+      }
+    }
+
+    function renderStrength() {
+      const wrap = $("strengthControl");
+      wrap.innerHTML = "";
+      for (let i = 1; i <= 5; i += 1) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `strength-dot${i <= editDraft.strength ? " active" : ""}`;
+        button.textContent = i;
+        button.addEventListener("click", () => {
+          editDraft.strength = i;
+          renderEdit();
+        });
+        wrap.appendChild(button);
+      }
+    }
+
+    function renderFeelingChips() {
+      const wrap = $("feelingChips");
+      wrap.innerHTML = "";
+      const merged = Array.from(new Set([...feelingLabels, ...(editDraft.feelings || [])]));
+      merged.forEach((label) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `chip${editDraft.feelings.includes(label) ? " selected" : ""}`;
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          const selected = editDraft.feelings.includes(label);
+          editDraft.feelings = selected ? editDraft.feelings.filter((item) => item !== label) : [...editDraft.feelings, label];
+          renderFeelingChips();
+        });
+        wrap.appendChild(button);
+      });
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "chip";
+      addButton.textContent = "+ 添加";
+      addButton.addEventListener("click", addFeeling);
+      wrap.appendChild(addButton);
+    }
+
+    function renderScenes() {
+      $("sceneSearchText").textContent = editDraft.scene ? `已选择：${editDraft.scene}` : "选择或搜索场景";
+      const wrap = $("sceneGrid");
+      wrap.innerHTML = "";
+      sceneLabels.forEach(([label, icon]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `scene-option${editDraft.scene.includes(label) ? " selected" : ""}`;
+        button.innerHTML = `<span class="scene-option-icon">${icon}</span><span class="scene-option-name">${label}</span>`;
+        button.addEventListener("click", () => {
+          if (label === "自定义") {
+            addScene();
+            return;
+          }
+          editDraft.scene = label === "学校" ? "学校 · 教室" : label;
+          renderScenes();
+        });
+        wrap.appendChild(button);
+      });
+    }
+
+    function updateCounts() {
+      $("thoughtCount").textContent = `${editThought.value.length}/300`;
+      $("doingCount").textContent = `${editDoing.value.length}/300`;
+      $("noteCount").textContent = `${editNote.value.length}/300`;
+    }
+
+    function showToast(message) {
+      window.clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.hidden = false;
+      toast.style.animation = "none";
+      void toast.offsetWidth;
+      toast.style.animation = "";
+      toastTimer = window.setTimeout(() => { toast.hidden = true; }, 1800);
+    }
+
+    function openDetail(recordId) {
+      currentRecordId = recordId;
+      setPage("detail");
+      detailScroll.scrollTop = 0;
+    }
+
+    function openEdit(recordId = currentRecordId, focusField = "") {
+      editingRecordId = recordId;
+      currentRecordId = recordId;
+      editFocusField = focusField;
+      editDraft = structuredClone(records[recordId]);
+      setPage("edit");
+    }
+
+    function saveEdit() {
+      editDraft.thought = editThought.value.trim();
+      editDraft.doing = editDoing.value.trim();
+      editDraft.note = editNote.value.trim();
+      records[editingRecordId] = structuredClone(editDraft);
+      currentRecordId = editingRecordId;
+      localStorage.setItem("emotion-island-records", JSON.stringify(records));
+      setPage("detail");
+      showToast("记录已保存");
+    }
+
+    function addFeeling() {
+      const value = window.prompt("请输入新的感受标签", "难过");
+      const label = value && value.trim();
+      if (!label) return;
+      if (!editDraft.feelings.includes(label)) editDraft.feelings.push(label);
+      renderFeelingChips();
+    }
+
+    function addScene() {
+      const value = window.prompt("请输入自定义场景", "操场");
+      const label = value && value.trim();
+      if (!label) return;
+      editDraft.scene = label;
+      renderScenes();
+    }
+
+    async function shareRecord() {
+      const record = currentRecord();
+      const text = `情绪岛记录：${record.mood}，${record.thought}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "情绪岛记录", text });
+          showToast("分享记录已打开");
+          return;
+        }
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          showToast("分享文字已复制");
+          return;
+        }
+        showToast("分享记录已生成");
+      } catch (error) {
+        showToast("分享已取消");
+      }
+    }
+
+    function exportRecord() {
+      const record = currentRecord();
+      const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `情绪岛-${record.mood}-${record.date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      URL.revokeObjectURL(link.href);
+      link.remove();
+      showToast("记录已导出");
+    }
+
+    function openMoodPicker() {
+      if (isAnimating || page !== "island") return;
+      picker.classList.add("is-open");
+      picker.setAttribute("aria-hidden", "false");
+    }
+
+    function closeMoodPicker() {
+      picker.classList.remove("is-open");
+      picker.setAttribute("aria-hidden", "true");
+    }
+
+    function buildParticles(nextMood) {
+      fxLayer.innerHTML = "";
+      (particlePresets[nextMood] || []).forEach(([left, top, delay]) => {
+        const item = document.createElement("span");
+        item.style.left = `${left}%`;
+        item.style.top = `${top}%`;
+        item.style.animationDelay = `${delay}ms`;
+        fxLayer.appendChild(item);
+      });
+    }
+
+    function showMoodCard(moodKey) {
+      const cards = moodCards[moodKey];
+      if (!cards || cards.length === 0) return;
+      
+      const randomIndex = Math.floor(Math.random() * cards.length);
+      const cardData = cards[randomIndex];
+      
+      moodCard.className = `mood-card mood-card-${moodKey}`;
+      moodCardText.textContent = cardData.text;
+      moodCardIllustration.textContent = cardData.illustration;
+      moodCardInput.value = "";
+      moodCardCounter.textContent = "0/200";
+      moodCardModal.classList.add("is-open");
+      moodCardModal.setAttribute("aria-hidden", "false");
+      moodCardModal.dataset.moodKey = moodKey;
+    }
+
+    function closeMoodCard() {
+      moodCardModal.classList.remove("is-open");
+      moodCardModal.setAttribute("aria-hidden", "true");
+    }
+
+    function handleMoodCardInput() {
+      moodCardCounter.textContent = `${moodCardInput.value.length}/200`;
+    }
+
+    function handleMoodCardSave() {
+      const moodKey = moodCardModal.dataset.moodKey;
+      const content = moodCardInput.value.trim();
+      if (content) {
+        saveEmotionLog(moodKey, content);
+        showToast("记录已保存");
+      }
+      closeMoodCard();
+    }
+
+    function switchMood(nextMood) {
+      if (!scenes[nextMood] || isAnimating) return;
+      const previous = screenImage.currentSrc || screenImage.src;
+      const ghost = document.createElement("img");
+      ghost.src = previous;
+      ghost.alt = "";
+      ghost.className = "transition-ghost";
+      ghost.draggable = false;
+      app.appendChild(ghost);
+      closeMoodPicker();
+      mood = nextMood;
+      localStorage.setItem("emotion-island-mood", mood);
+      page = "island";
+      buildParticles(mood);
+      render();
+      isAnimating = true;
+      app.classList.remove("fx-happy", "fx-anxious", "fx-calm", "fx-angry", "fx-sad", "is-changing");
+      void app.offsetWidth;
+      app.classList.add("is-changing", `fx-${mood}`);
+      
+      window.setTimeout(() => {
+        ghost.remove();
+        app.classList.remove("is-changing", "fx-happy", "fx-anxious", "fx-calm", "fx-angry", "fx-sad");
+        fxLayer.innerHTML = "";
+        isAnimating = false;
+        showMoodCard(mood);
+      }, 980);
+    }
+
+    plusButton.addEventListener("click", openMoodPicker);
+    soundButton.addEventListener("click", () => showToast("音效已切换"));
+    closePicker.addEventListener("click", closeMoodPicker);
+    moodCardClose.addEventListener("click", closeMoodCard);
+    moodCardModal.addEventListener("click", (event) => {
+      if (event.target === moodCardModal) closeMoodCard();
+    });
+    moodCardInput.addEventListener("input", handleMoodCardInput);
+    moodCardSave.addEventListener("click", handleMoodCardSave);
+    calendarBackButton.addEventListener("click", closeCalendarPage);
+    profileEmotionRecord.addEventListener("click", openCalendarPage);
+    profileHistoryRecord.addEventListener("click", openAITreeHole);
+    $("calendarEntryButton").addEventListener("click", showCalendarContent);
+    treeTrunk.addEventListener("click", () => { openTreeHole(); setTimeout(openTreeHoleModal, 300); });
+    treeHoleCancel.addEventListener("click", closeTreeHole);
+    treeHoleSubmit.addEventListener("click", submitTreeHole);
+    treeHoleInput.addEventListener("input", handleTreeHoleInput);
+    treeHoleModal.addEventListener("click", (e) => { if (e.target === treeHoleModal) closeTreeHole(); });
+    timeCapsuleBackButton.addEventListener("click", closeTimeCapsule);
+    timeCapsulePrev.addEventListener("click", prevCapsuleMonth);
+    timeCapsuleNext.addEventListener("click", nextCapsuleMonth);
+    if ($("timeCapsuleHit")) $("timeCapsuleHit").addEventListener("click", openTimeCapsule);
+    navIsland.addEventListener("click", () => setPage("island"));
+    navSocial.addEventListener("click", () => setPage("social"));
+    navProfile.addEventListener("click", () => setPage("profile"));
+    $("recordCardHit").addEventListener("click", () => openDetail("sadToday"));
+    $("recordEditHit").addEventListener("click", () => openDetail("sadToday"));
+    $("recordRowOne").addEventListener("click", () => openDetail("sadToday"));
+    $("recordRowTwo").addEventListener("click", () => openDetail("calmYesterday"));
+    $("recordSortHit").addEventListener("click", () => showToast("已按最新记录排序"));
+    $("detailBackButton").addEventListener("click", () => setPage("social"));
+    $("detailMoreButton").addEventListener("click", () => showToast("更多操作已打开"));
+    $("detailEditButton").addEventListener("click", () => openEdit(currentRecordId));
+    document.querySelectorAll("[data-edit-field]").forEach((button) => {
+      button.addEventListener("click", () => openEdit(currentRecordId, button.dataset.editField));
+    });
+
+    socialTabAI.addEventListener("click", () => switchSocialTab("ai"));
+    socialTabTree.addEventListener("click", () => switchSocialTab("tree"));
+    $("socialBackBtn").addEventListener("click", () => setPage("island"));
+    aiInput.addEventListener("input", handleAIInput);
+    aiTransformBtn.addEventListener("click", transformAI);
+    document.querySelectorAll(".ai-style-btn").forEach(btn => {
+      btn.addEventListener("click", () => selectAIStyle(btn.dataset.style));
+    });
+    document.querySelectorAll(".tree-mood-tag").forEach(btn => {
+      btn.addEventListener("click", () => selectMoodTag(btn.dataset.tag));
+    });
+    treeFindBtn.addEventListener("click", startMatching);
+    treeChatSend.addEventListener("click", sendChatMessage);
+    treeChatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendChatMessage(); });
+    treeEndFlower.addEventListener("click", () => { showToast("谢谢你的小红花~"); closeChatEnd(); });
+    $("recordMomentButton").addEventListener("click", () => openEdit(relatedRecord().id));
+    $("relatedRecordCard").addEventListener("click", () => openDetail(relatedRecord().id));
+    $("deleteRecordButton").addEventListener("click", () => { setPage("social"); showToast("记录已删除"); });
+    $("shareRecordButton").addEventListener("click", shareRecord);
+    $("exportRecordButton").addEventListener("click", exportRecord);
+    $("editBackButton").addEventListener("click", () => setPage("detail"));
+    $("editSaveButton").addEventListener("click", saveEdit);
+    [editThought, editDoing, editNote].forEach((input) => {
+      input.addEventListener("input", () => {
+        editDraft.thought = editThought.value;
+        editDraft.doing = editDoing.value;
+        editDraft.note = editNote.value;
+        updateCounts();
+      });
+    });
+    picker.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-mood]");
+      if (target) switchMood(target.dataset.mood);
+    });
+  </script>
+</body>
+</html>

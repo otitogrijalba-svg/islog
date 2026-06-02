@@ -1,0 +1,48 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 编辑器/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 环境配置（敏感信息）
+.env
+.env.*
+!.env.example
+
+# 依赖目录
+node_modules/
+
+# 构建产物
+dist/
+build/
+
+# 日志
+*.log
+npm-debug.log*
+
+# 临时文件
+*.tmp
+*.bak
+.cache
+.parcel-cache
+
+# Next.js / Nuxt
+.next
+out
+.nuxt
+.output
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+.vite/
+
+# Coverage
+coverage/
+.nyc_output

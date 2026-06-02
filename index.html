@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>情绪岛小程序预览</title>
+  <style>
+    :root {
+      --screen-w: min(100vw, 430px, calc(46.258vh - 16.65px));
+      --olive: #9aaa46;
+      --blue: #6db8e8;
+      --green: #8ccc9a;
+      --text: #2d3237;
+      --muted: #7b7f84;
+      --line: #edf0ef;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      background: #eef6f5;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: start center;
+      padding: 18px 0;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      position: relative;
+      width: var(--screen-w);
+      aspect-ratio: 853 / 1844;
+      overflow: hidden;
+      border-radius: clamp(24px, 8.5vw, 36px);
+      background: #f7faf8;
+      box-shadow: 0 22px 80px rgba(60, 86, 92, 0.22);
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .screen-image,
+    .picker-image,
+    .transition-ghost {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      border: 0;
+    }
+
+    .screen-image {
+      z-index: 1;
+    }
+
+    .screen-image[hidden],
+    .detail-page[hidden],
+    .edit-page[hidden] {
+      display: none;
+    }
+
+    .transition-ghost {
+      z-index: 2;
+      pointer-events: none;
+      animation: oldSceneOut 620ms ease both;
+    }
+
+    .hit {
+      position: absolute;
+      z-index: 5;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      appearance: none;
+      background: rgba(255, 255, 255, 0);
+      color: transparent;
+      outline: none;
+    }
+
+    .hit:focus-visible,
+    .plain-button:focus-visible,
+    .chip:focus-visible,
+    .scene-option:focus-visible,
+    .strength-dot:focus-visible {
+      outline: 2px solid rgba(111, 160, 224, 0.7);
+      outline-offset: 2px;
+    }
+
+    .plus-hit {
+      left: 79.6%;
+      top: 76.5%;
+      width: 17%;
+      height: 9.2%;
+      border-radius: 999px;
+    }
+
+    .sound-hit {
+      left: 82%;
+      top: 17.2%;
+      width: 13%;
+      height: 7%;
+      border-radius: 999px;
+    }
+
+    .nav-hit {
+      top: 88%;
+      height: 11.3%;
+      border-radius: 22px;
+    }
+
+    .nav-island { left: 4%; width: 29%; }
+    .nav-records { left: 35.5%; width: 29%; }
+    .nav-profile { left: 67%; width: 29%; }
+
+    .record-card-hit {
+      left: 5.4%;
+      top: 15.6%;
+      width: 89%;
+      height: 16.7%;
+      border-radius: 18px;
+    }
+
+    .record-edit-hit {
+      left: 79%;
+      top: 17.3%;
+      width: 14.5%;
+      height: 5.2%;
+      border-radius: 14px;
+    }
+
+    .record-row-hit {
+      left: 5.5%;
+      width: 89%;
+      height: 8.4%;
+      border-radius: 16px;
+    }
+
+    .record-row-one { top: 38.4%; }
+    .record-row-two { top: 47.7%; }
+
+    .record-sort-hit {
+      left: 82%;
+      top: 34.1%;
+      width: 12%;
+      height: 4%;
+      border-radius: 10px;
+    }
+
+    .profile-action-hit {
+      left: 6.5%;
+      width: 87%;
+      height: 5.7%;
+      border-radius: 14px;
+    }
+
+    .profile-settings-hit { left: 85%; top: 7.8%; width: 10%; height: 5.6%; border-radius: 999px; }
+    .profile-friends-hit { top: 43%; }
+    .profile-add-hit { top: 48.7%; }
+    .profile-message-hit { top: 54.4%; }
+    .profile-favorites-hit { top: 61.7%; }
+    .profile-trash-hit { top: 67.4%; }
+    .profile-help-hit { top: 74.7%; }
+
+    .ios-bar {
+      height: 5.7%;
+      padding: 4.6% 7.7% 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: calc(var(--screen-w) * 0.036);
+      color: #070707;
+    }
+
+    .ios-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: calc(var(--screen-w) * 0.028);
+    }
+
+    .page-header {
+      height: 5.2%;
+      padding: 0 5.5%;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.12) 1fr calc(var(--screen-w) * 0.13);
+      align-items: center;
+    }
+
+    .plain-button {
+      border: 0;
+      background: transparent;
+      color: #23272b;
+      padding: 0;
+    }
+
+    .back-button {
+      font-size: calc(var(--screen-w) * 0.058);
+      line-height: 1;
+      text-align: left;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: calc(var(--screen-w) * 0.052);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .save-button {
+      color: var(--olive);
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .menu-button {
+      text-align: right;
+      font-size: calc(var(--screen-w) * 0.055);
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .detail-page,
+    .edit-page {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      background: linear-gradient(180deg, #f8fbfa 0%, #ffffff 100%);
+      color: var(--text);
+    }
+
+    .detail-scroll,
+    .edit-scroll {
+      height: 89.1%;
+      overflow-y: auto;
+      padding: 1.5% 3.8% 13.5%;
+      scrollbar-width: none;
+    }
+
+    .detail-scroll::-webkit-scrollbar,
+    .edit-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .soft-card {
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 10px 28px rgba(68, 84, 88, 0.08);
+    }
+
+    .record-detail-card {
+      padding: 5.3% 4.3% 4.5%;
+    }
+
+    .record-head {
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.14) 1fr auto;
+      gap: calc(var(--screen-w) * 0.03);
+      align-items: center;
+      padding-bottom: 4.2%;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .face {
+      width: calc(var(--screen-w) * 0.12);
+      height: calc(var(--screen-w) * 0.12);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--screen-w) * 0.072);
+      line-height: 1;
+      background: #93cff5;
+      color: #111;
+    }
+
+    .face.calm {
+      background: #abe3b9;
+    }
+
+    .mood-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: calc(var(--screen-w) * 0.047);
+      font-weight: 700;
+    }
+
+    .strength {
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: #eef8ff;
+      color: #4b98d4;
+      font-size: calc(var(--screen-w) * 0.029);
+      font-weight: 600;
+    }
+
+    .strength.calm {
+      background: #f0faef;
+      color: #89a84d;
+    }
+
+    .time {
+      margin-top: 5px;
+      color: #777;
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .edit-pill,
+    .record-pill {
+      min-width: calc(var(--screen-w) * 0.16);
+      min-height: calc(var(--screen-w) * 0.072);
+      border: 1px solid #eef0ef;
+      border-radius: 14px;
+      background: #fff;
+      color: #3f4448;
+      box-shadow: 0 8px 18px rgba(80, 90, 94, 0.05);
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .detail-section {
+      padding: 4.4% 0;
+      border-bottom: 1px solid #f0f1f0;
+    }
+
+    .detail-section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .detail-section button {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      color: inherit;
+    }
+
+    .detail-label {
+      margin-bottom: 2.5%;
+      font-size: calc(var(--screen-w) * 0.035);
+      font-weight: 700;
+    }
+
+    .detail-value {
+      color: #3d4246;
+      font-size: calc(var(--screen-w) * 0.036);
+      line-height: 1.65;
+      word-break: break-word;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 5px 13px;
+      border-radius: 999px;
+      color: #55729d;
+      background: #f1f5ff;
+      font-size: calc(var(--screen-w) * 0.031);
+    }
+
+    .scene-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .scene-icon {
+      width: calc(var(--screen-w) * 0.07);
+      height: calc(var(--screen-w) * 0.07);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #d8f2eb;
+      color: #6c8481;
+      font-size: calc(var(--screen-w) * 0.04);
+      flex: 0 0 auto;
+    }
+
+    .chevron {
+      margin-left: auto;
+      color: #a3a3a3;
+      font-size: calc(var(--screen-w) * 0.04);
+    }
+
+    .status-card {
+      margin-top: 3.2%;
+      padding: 4.5%;
+    }
+
+    .status-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3%;
+      font-size: calc(var(--screen-w) * 0.04);
+      font-weight: 700;
+    }
+
+    .status-time {
+      margin-top: -2%;
+      margin-bottom: 3%;
+      color: #777;
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .related-card {
+      border: 0;
+      width: 100%;
+      border-radius: 16px;
+      background: #fbfcfa;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.12) 1fr;
+      gap: 13px;
+      align-items: center;
+      padding: 4%;
+      text-align: left;
+      color: inherit;
+    }
+
+    .tip-card {
+      margin-top: 3.2%;
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.13) 1fr calc(var(--screen-w) * 0.22);
+      gap: 12px;
+      align-items: center;
+      padding: 4.5%;
+    }
+
+    .tip-star {
+      width: calc(var(--screen-w) * 0.1);
+      height: calc(var(--screen-w) * 0.1);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: #ffd55d;
+      clip-path: polygon(50% 0, 61% 33%, 96% 33%, 68% 53%, 79% 88%, 50% 67%, 21% 88%, 32% 53%, 4% 33%, 39% 33%);
+      font-size: calc(var(--screen-w) * 0.035);
+    }
+
+    .tip-title {
+      font-weight: 700;
+      margin-bottom: 5px;
+      font-size: calc(var(--screen-w) * 0.036);
+    }
+
+    .tip-text {
+      color: #333;
+      line-height: 1.55;
+      font-size: calc(var(--screen-w) * 0.032);
+    }
+
+    .tip-island {
+      height: calc(var(--screen-w) * 0.075);
+      border-radius: 50% 50% 30% 30%;
+      background: radial-gradient(circle at 50% 0, #8ccf6b, #d9f1da 70%);
+    }
+
+    .detail-actions {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      bottom: 2.8%;
+      z-index: 18;
+      height: 8%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4%;
+      align-items: center;
+      padding: 2% 3%;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 -6px 26px rgba(76, 93, 96, 0.08);
+    }
+
+    .action-button {
+      height: calc(var(--screen-w) * 0.08);
+      border: 1px solid #eef0ef;
+      border-radius: 12px;
+      background: #fff;
+      color: #4b4f53;
+      font-size: calc(var(--screen-w) * 0.031);
+    }
+
+    .action-button.export {
+      border-color: #c8d18a;
+      color: var(--olive);
+    }
+
+    .edit-card {
+      padding: 3.8% 4.3% 3.5%;
+    }
+
+    .edit-emotion {
+      display: grid;
+      grid-template-columns: calc(var(--screen-w) * 0.13) 1fr;
+      gap: calc(var(--screen-w) * 0.025);
+      align-items: center;
+      padding-bottom: 3.2%;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .strength-control {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .strength-dot {
+      width: calc(var(--screen-w) * 0.05);
+      height: calc(var(--screen-w) * 0.05);
+      border: 1px solid #dbe3c0;
+      border-radius: 50%;
+      background: #fff;
+      color: #9aaa46;
+      font-size: calc(var(--screen-w) * 0.025);
+      padding: 0;
+    }
+
+    .strength-dot.active {
+      background: var(--olive);
+      color: #fff;
+      border-color: var(--olive);
+    }
+
+    .edit-section {
+      margin-top: 3.4%;
+    }
+
+    .edit-label {
+      display: block;
+      font-size: calc(var(--screen-w) * 0.033);
+      font-weight: 700;
+      margin-bottom: 1.4%;
+    }
+
+    .edit-sub {
+      margin-top: -1%;
+      margin-bottom: 1.5%;
+      color: #9a9a9a;
+      font-size: calc(var(--screen-w) * 0.03);
+    }
+
+    .field-wrap {
+      position: relative;
+    }
+
+    .edit-textarea {
+      width: 100%;
+      min-height: calc(var(--screen-w) * 0.178);
+      border: 1.5px solid #afbd78;
+      border-radius: 14px;
+      padding: calc(var(--screen-w) * 0.03) calc(var(--screen-w) * 0.04) calc(var(--screen-w) * 0.06);
+      resize: none;
+      outline: none;
+      color: #555;
+      background: #fff;
+      line-height: 1.55;
+      font-size: calc(var(--screen-w) * 0.034);
+    }
+
+    .edit-textarea.small {
+      min-height: calc(var(--screen-w) * 0.145);
+    }
+
+    .counter {
+      position: absolute;
+      right: 14px;
+      bottom: 8px;
+      color: #777;
+      font-size: calc(var(--screen-w) * 0.028);
+      pointer-events: none;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      position: relative;
+      min-width: calc(var(--screen-w) * 0.148);
+      min-height: calc(var(--screen-w) * 0.064);
+      border: 1px solid #ecefee;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #555;
+      padding: 0 calc(var(--screen-w) * 0.018);
+      font-size: calc(var(--screen-w) * 0.032);
+      box-shadow: 0 8px 18px rgba(80, 90, 94, 0.05);
+    }
+
+    .chip.selected {
+      border-color: #cdd8a1;
+      color: var(--olive);
+      background: #fbfcf5;
+    }
+
+    .chip.selected::after {
+      content: "✓";
+      position: absolute;
+      right: 5px;
+      top: 4px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #a9be65;
+      color: white;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .scene-search {
+      height: calc(var(--screen-w) * 0.105);
+      border: 1px solid #eef0ef;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 11px;
+      color: #8c8c8c;
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(82, 95, 95, 0.03);
+    }
+
+    .scene-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: calc(var(--screen-w) * 0.008);
+      margin-top: calc(var(--screen-w) * 0.012);
+    }
+
+    .scene-option {
+      min-height: calc(var(--screen-w) * 0.112);
+      border: 1px solid #eef0ef;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #555;
+      display: grid;
+      place-items: center;
+      padding: 4px 1px;
+      box-shadow: 0 8px 18px rgba(80, 90, 94, 0.05);
+    }
+
+    .scene-option.selected {
+      border-color: #aebc72;
+      color: var(--olive);
+      background: #fbfcf5;
+    }
+
+    .scene-option-icon {
+      font-size: calc(var(--screen-w) * 0.038);
+      line-height: 1.1;
+    }
+
+    .scene-option-name {
+      font-size: calc(var(--screen-w) * 0.023);
+      white-space: nowrap;
+    }
+
+    .picker {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .picker.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .picker-image {
+      z-index: 31;
+    }
+
+    .emotion-hit,
+    .close-hit {
+      z-index: 32;
+    }
+
+    .emotion-hit {
+      width: 22%;
+      height: 14.4%;
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+    }
+
+    .pick-happy { left: 20.5%; top: 66.4%; }
+    .pick-anxious { left: 50%; top: 66.4%; }
+    .pick-calm { left: 79.5%; top: 66.4%; }
+    .pick-angry { left: 35%; top: 81.4%; }
+    .pick-sad { left: 65%; top: 81.4%; }
+
+    .close-hit {
+      left: 42.8%;
+      top: 88.2%;
+      width: 14.8%;
+      height: 8.2%;
+      border-radius: 999px;
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .app-shell.is-changing .screen-image { animation: newSceneIn 760ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .app-shell.is-changing .fx-layer { opacity: 1; }
+    .app-shell.fx-angry { animation: islandShake 520ms ease both; }
+
+    .fx-layer span {
+      position: absolute;
+      display: block;
+      opacity: 0;
+    }
+
+    .fx-happy .fx-layer span {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255, 208, 90, 0.8);
+      box-shadow: 0 0 22px rgba(255, 211, 95, 0.9);
+      animation: warmFloat 820ms ease-out both;
+    }
+
+    .fx-calm .fx-layer span {
+      width: 30px;
+      height: 30px;
+      border: 2px solid rgba(109, 205, 187, 0.5);
+      border-radius: 50%;
+      animation: calmRipple 900ms ease-out both;
+    }
+
+    .fx-anxious .fx-layer span {
+      width: 9px;
+      height: 18px;
+      border-radius: 60% 0 60% 0;
+      background: rgba(217, 155, 66, 0.74);
+      transform: rotate(35deg);
+      animation: leafDrift 900ms ease-out both;
+    }
+
+    .fx-sad .fx-layer span {
+      width: 2px;
+      height: 64px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+      transform: rotate(14deg);
+      animation: rainDrop 820ms linear both;
+    }
+
+    .fx-angry .fx-layer span {
+      width: 7px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(255, 105, 71, 0.72);
+      box-shadow: 0 0 12px rgba(255, 120, 70, 0.75);
+      animation: emberRise 780ms ease-out both;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 11.5%;
+      z-index: 50;
+      max-width: 76%;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(43, 48, 52, 0.78);
+      color: #fff;
+      font-size: 15px;
+      line-height: 1.35;
+      text-align: center;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      animation: toastIn 1800ms ease both;
+      white-space: nowrap;
+    }
+
+    @keyframes oldSceneOut {
+      0% { opacity: 1; transform: scale(1); filter: blur(0); }
+      100% { opacity: 0; transform: scale(0.982); filter: blur(4px); }
+    }
+
+    @keyframes newSceneIn {
+      0% { opacity: 0.18; transform: scale(1.035); filter: blur(5px) saturate(1.12); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0) saturate(1); }
+    }
+
+    @keyframes islandShake {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      16% { transform: translate3d(-2px, 1px, 0); }
+      34% { transform: translate3d(2px, -1px, 0); }
+      50% { transform: translate3d(-1px, -1px, 0); }
+      66% { transform: translate3d(1px, 1px, 0); }
+    }
+
+    @keyframes warmFloat {
+      0% { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.45); }
+      22% { opacity: 0.95; }
+      100% { opacity: 0; transform: translate3d(0, -90px, 0) scale(1.2); }
+    }
+
+    @keyframes calmRipple {
+      0% { opacity: 0.72; transform: scale(0.3); }
+      100% { opacity: 0; transform: scale(3.4); }
+    }
+
+    @keyframes leafDrift {
+      0% { opacity: 0; transform: translate3d(-10px, -20px, 0) rotate(10deg); }
+      20% { opacity: 0.88; }
+      100% { opacity: 0; transform: translate3d(46px, 150px, 0) rotate(220deg); }
+    }
+
+    @keyframes rainDrop {
+      0% { opacity: 0; transform: translate3d(0, -110px, 0) rotate(14deg); }
+      15% { opacity: 0.85; }
+      100% { opacity: 0; transform: translate3d(-54px, 360px, 0) rotate(14deg); }
+    }
+
+    @keyframes emberRise {
+      0% { opacity: 0; transform: translate3d(0, 78px, 0) scale(0.6); }
+      20% { opacity: 0.92; }
+      100% { opacity: 0; transform: translate3d(0, -140px, 0) scale(1.08); }
+    }
+
+    @keyframes toastIn {
+      0% { opacity: 0; transform: translate3d(-50%, 8px, 0); }
+      14%, 82% { opacity: 1; transform: translate3d(-50%, 0, 0); }
+      100% { opacity: 0; transform: translate3d(-50%, 8px, 0); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell" id="app" aria-label="情绪岛小程序预览">
+    <img class="screen-image" id="screenImage" src="assets/happy.jpg" alt="情绪岛首页" draggable="false" />
+    <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
+    <section class="detail-page" id="detailPage" aria-label="记录详情" hidden>
+      <div class="ios-bar"><span>9:41</span><span class="ios-icons">▮▮▮ ⌁ ▰</span></div>
+      <div class="page-header">
+        <button class="plain-button back-button" id="detailBackButton" type="button" aria-label="返回记录">‹</button>
+        <div class="page-title">记录详情</div>
+        <button class="plain-button menu-button" id="detailMoreButton" type="button" aria-label="更多">...</button>
+      </div>
+
+      <div class="detail-scroll" id="detailScroll">
+        <article class="soft-card record-detail-card">
+          <div class="record-head">
+            <div class="face" id="detailFace">☹</div>
+            <div>
+              <div class="mood-line">
+                <span id="detailMood">悲伤</span>
+                <span class="strength" id="detailStrength">强度 4/5</span>
+              </div>
+              <div class="time"><span id="detailDate">05月20日</span>　<span id="detailTime">14:30</span></div>
+            </div>
+            <button class="edit-pill" id="detailEditButton" type="button">✎ 编辑</button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="thought">
+              <div class="detail-label">当时的想法</div>
+              <div class="detail-value" id="detailThought"></div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="feelings">
+              <div class="detail-label">当时的感受</div>
+              <div class="tag-row" id="detailFeelings"></div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="scene">
+              <div class="detail-label">当时的场景</div>
+              <div class="scene-row">
+                <span class="scene-icon">⌂</span>
+                <span class="detail-value" id="detailScene"></span>
+                <span class="chevron">›</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="doing">
+              <div class="detail-label">当时在做什么</div>
+              <div class="detail-value" id="detailDoing"></div>
+            </button>
+          </div>
+
+          <div class="detail-section">
+            <button type="button" data-edit-field="note">
+              <div class="detail-label">备注</div>
+              <div class="detail-value" id="detailNote"></div>
+            </button>
+          </div>
+        </article>
+
+        <section class="soft-card status-card">
+          <div class="status-title">
+            <span>此刻的状态</span>
+            <button class="record-pill" id="recordMomentButton" type="button">✎ 记录此刻</button>
+          </div>
+          <div class="status-time" id="relatedTime">05月19日　20:30</div>
+          <button class="related-card" id="relatedRecordCard" type="button">
+            <div class="face calm" id="relatedFace">⌣</div>
+            <div>
+              <div class="mood-line">
+                <span id="relatedMood">平静</span>
+                <span class="strength calm" id="relatedStrength">强度 2/5</span>
+              </div>
+              <div class="detail-value" id="relatedThought"></div>
+            </div>
+          </button>
+        </section>
+
+        <section class="soft-card tip-card">
+          <div class="tip-star">★</div>
+          <div>
+            <div class="tip-title">小贴士</div>
+            <div class="tip-text">难过的时候，允许自己慢慢来。深呼吸，给自己一个拥抱吧～</div>
+          </div>
+          <div class="tip-island"></div>
+        </section>
+      </div>
+
+      <div class="detail-actions">
+        <button class="action-button" id="deleteRecordButton" type="button">⌫ 删除记录</button>
+        <button class="action-button" id="shareRecordButton" type="button">↗ 分享记录</button>
+        <button class="action-button export" id="exportRecordButton" type="button">⇩ 导出记录</button>
+      </div>
+    </section>
+
+    <section class="edit-page" id="editPage" aria-label="编辑记录" hidden>
+      <div class="ios-bar"><span>9:41</span><span class="ios-icons">▮▮▮ ⌁ ▰</span></div>
+      <div class="page-header">
+        <button class="plain-button back-button" id="editBackButton" type="button" aria-label="返回详情">‹</button>
+        <div class="page-title">编辑记录</div>
+        <button class="plain-button save-button" id="editSaveButton" type="button">保存</button>
+      </div>
+
+      <div class="edit-scroll">
+        <div class="soft-card edit-card">
+          <div class="edit-emotion">
+            <div class="face" id="editFace">☹</div>
+            <div>
+              <div class="mood-line">
+                <span id="editMood">悲伤</span>
+                <span class="strength" id="editStrength">强度 4/5</span>
+              </div>
+              <div class="time"><span id="editDate">05月20日</span>　<span id="editTime">14:30</span></div>
+              <div class="strength-control" id="strengthControl"></div>
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <label class="edit-label" for="editThought">当时的想法</label>
+            <div class="field-wrap">
+              <textarea class="edit-textarea" id="editThought" maxlength="300"></textarea>
+              <span class="counter" id="thoughtCount">0/300</span>
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <div class="edit-label">当时的感受</div>
+            <div class="edit-sub">选择此刻的感受（可多选）</div>
+            <div class="chip-row" id="feelingChips"></div>
+          </div>
+
+          <div class="edit-section">
+            <div class="edit-label">当时的场景</div>
+            <div class="scene-search">
+              <span class="scene-icon">⌂</span>
+              <span id="sceneSearchText">选择或搜索场景</span>
+              <span class="chevron">⌄</span>
+            </div>
+            <div class="scene-grid" id="sceneGrid"></div>
+          </div>
+
+          <div class="edit-section">
+            <label class="edit-label" for="editDoing">当时在做什么</label>
+            <div class="field-wrap">
+              <textarea class="edit-textarea small" id="editDoing" maxlength="300"></textarea>
+              <span class="counter" id="doingCount">0/300</span>
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <label class="edit-label" for="editNote">备注</label>
+            <div class="field-wrap">
+              <textarea class="edit-textarea small" id="editNote" maxlength="300"></textarea>
+              <span class="counter" id="noteCount">0/300</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <button class="hit plus-hit" id="plusButton" type="button" aria-label="选择我的情绪"></button>
+    <button class="hit sound-hit" id="soundButton" type="button" aria-label="切换音效"></button>
+    <button class="hit nav-hit nav-island" id="navIsland" type="button" aria-label="岛屿"></button>
+    <button class="hit nav-hit nav-records" id="navRecords" type="button" aria-label="记录"></button>
+    <button class="hit nav-hit nav-profile" id="navProfile" type="button" aria-label="我的"></button>
+    <button class="hit record-card-hit" id="recordCardHit" type="button" aria-label="查看记录详情" hidden></button>
+    <button class="hit record-edit-hit" id="recordEditHit" type="button" aria-label="编辑心情记录" hidden></button>
+    <button class="hit record-row-hit record-row-one" id="recordRowOne" type="button" aria-label="查看悲伤记录" hidden></button>
+    <button class="hit record-row-hit record-row-two" id="recordRowTwo" type="button" aria-label="查看平静记录" hidden></button>
+    <button class="hit record-sort-hit" id="recordSortHit" type="button" aria-label="切换记录排序" hidden></button>
+    <button class="hit profile-action-hit profile-settings-hit" data-toast="设置功能已响应" type="button" aria-label="设置" hidden></button>
+    <button class="hit profile-action-hit profile-friends-hit" data-toast="进入好友的岛屿功能已响应" type="button" aria-label="进入好友的岛屿" hidden></button>
+    <button class="hit profile-action-hit profile-add-hit" data-toast="添加好友功能已响应" type="button" aria-label="添加好友" hidden></button>
+    <button class="hit profile-action-hit profile-message-hit" data-toast="消息通知功能已响应" type="button" aria-label="消息通知" hidden></button>
+    <button class="hit profile-action-hit profile-favorites-hit" data-toast="收藏夹功能已响应" type="button" aria-label="收藏夹" hidden></button>
+    <button class="hit profile-action-hit profile-trash-hit" data-toast="回收站功能已响应" type="button" aria-label="回收站" hidden></button>
+    <button class="hit profile-action-hit profile-help-hit" data-toast="帮助与反馈功能已响应" type="button" aria-label="帮助与反馈" hidden></button>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <section class="picker" id="picker" aria-label="选择我的情绪" aria-hidden="true">
+      <img class="picker-image" src="assets/picker.jpg" alt="选择我的情绪弹窗" draggable="false" />
+      <button class="hit emotion-hit pick-happy" type="button" data-mood="happy" aria-label="开心"></button>
+      <button class="hit emotion-hit pick-anxious" type="button" data-mood="anxious" aria-label="焦虑"></button>
+      <button class="hit emotion-hit pick-calm" type="button" data-mood="calm" aria-label="平静"></button>
+      <button class="hit emotion-hit pick-angry" type="button" data-mood="angry" aria-label="愤怒"></button>
+      <button class="hit emotion-hit pick-sad" type="button" data-mood="sad" aria-label="悲伤"></button>
+      <button class="hit close-hit" id="closePicker" type="button" aria-label="关闭"></button>
+    </section>
+  </main>
+
+  <script>
+    const scenes = {
+      happy: "assets/happy.jpg",
+      anxious: "assets/anxious.jpg",
+      calm: "assets/calm.jpg",
+      angry: "assets/angry.jpg",
+      sad: "assets/sad.jpg",
+      records: "assets/records.jpg",
+      profile: "assets/profile.jpg"
+    };
+
+    const particlePresets = {
+      happy: [[17, 39, 0], [29, 48, 70], [44, 35, 130], [59, 46, 30], [75, 38, 100], [63, 61, 180], [37, 64, 210]],
+      anxious: [[9, 31, 0], [23, 38, 120], [48, 34, 60], [68, 43, 180], [85, 37, 80], [15, 52, 220], [73, 60, 160]],
+      calm: [[27, 39, 0], [50, 49, 100], [71, 42, 180], [39, 64, 240], [61, 67, 320]],
+      angry: [[50, 38, 0], [45, 41, 80], [54, 42, 160], [48, 46, 220], [57, 47, 280], [52, 51, 360]],
+      sad: [[14, 18, 0], [28, 15, 80], [42, 20, 160], [56, 16, 40], [70, 19, 120], [84, 14, 200], [21, 38, 260], [62, 35, 320]]
+    };
+
+    const baseRecords = {
+      sadToday: {
+        id: "sadToday",
+        mood: "悲伤",
+        moodKey: "sad",
+        face: "☹",
+        date: "05月20日",
+        time: "14:30",
+        strength: 4,
+        thought: "有点难过的一天... 💧",
+        feelings: ["失落", "孤单", "疲惫", "压力大"],
+        scene: "学校 · 教室",
+        doing: "写作业",
+        note: "和朋友吵架了，心里不太舒服。"
+      },
+      calmYesterday: {
+        id: "calmYesterday",
+        mood: "平静",
+        moodKey: "calm",
+        face: "⌣",
+        date: "05月19日",
+        time: "20:30",
+        strength: 2,
+        thought: "感觉好多了，和朋友和好了。和朋友聊了聊天，心情变好了～",
+        feelings: ["放松", "安心", "释然"],
+        scene: "家",
+        doing: "和朋友聊天",
+        note: "昨天慢慢说开了，心里轻松很多。"
+      }
+    };
+
+    const feelingLabels = ["失落", "孤单", "疲惫", "压力大", "难受", "委屈", "沮丧", "烦躁", "焦虑", "放松", "安心", "释然"];
+    const sceneLabels = [
+      ["学校", "🏫"], ["教室", "▰"], ["实验室", "⚗"], ["家", "⌂"],
+      ["图书馆", "▥"], ["电影院", "▣"], ["户外", "♣"], ["自定义", "+"]
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const app = $("app");
+    const screenImage = $("screenImage");
+    const detailPage = $("detailPage");
+    const editPage = $("editPage");
+    const detailScroll = $("detailScroll");
+    const fxLayer = $("fxLayer");
+    const picker = $("picker");
+    const toast = $("toast");
+    const plusButton = $("plusButton");
+    const soundButton = $("soundButton");
+    const navIsland = $("navIsland");
+    const navRecords = $("navRecords");
+    const navProfile = $("navProfile");
+    const closePicker = $("closePicker");
+    const recordHits = [$("recordCardHit"), $("recordEditHit"), $("recordRowOne"), $("recordRowTwo"), $("recordSortHit")];
+    const profileHits = Array.from(document.querySelectorAll(".profile-action-hit"));
+    const editThought = $("editThought");
+    const editDoing = $("editDoing");
+    const editNote = $("editNote");
+
+    let mood = localStorage.getItem("emotion-island-mood") || "happy";
+    let page = "island";
+    let isAnimating = false;
+    let currentRecordId = "sadToday";
+    let editingRecordId = "sadToday";
+    let editFocusField = "";
+    let toastTimer;
+    let records = structuredClone(baseRecords);
+    let editDraft = structuredClone(records.sadToday);
+
+    try {
+      const savedRecords = JSON.parse(localStorage.getItem("emotion-island-records") || "null");
+      if (savedRecords) records = { ...records, ...savedRecords };
+    } catch (error) {}
+
+    function currentRecord() {
+      return records[currentRecordId] || records.sadToday;
+    }
+
+    function relatedRecord() {
+      return currentRecordId === "calmYesterday" ? records.sadToday : records.calmYesterday;
+    }
+
+    function sceneForCurrentPage() {
+      if (page === "records") return scenes.records;
+      if (page === "profile") return scenes.profile;
+      return scenes[mood];
+    }
+
+    function setPage(nextPage) {
+      page = nextPage;
+      render();
+    }
+
+    function render() {
+      const imagePage = page === "island" || page === "records" || page === "profile";
+      screenImage.hidden = !imagePage;
+      detailPage.hidden = page !== "detail";
+      editPage.hidden = page !== "edit";
+      if (imagePage) screenImage.src = sceneForCurrentPage();
+
+      plusButton.hidden = page !== "island";
+      soundButton.hidden = page !== "island";
+      navIsland.hidden = !imagePage;
+      navRecords.hidden = !imagePage;
+      navProfile.hidden = !imagePage;
+      recordHits.forEach((item) => { item.hidden = page !== "records"; });
+      profileHits.forEach((item) => { item.hidden = page !== "profile"; });
+      app.dataset.page = page;
+      app.dataset.mood = mood;
+
+      if (page === "detail") renderDetail();
+      if (page === "edit") renderEdit();
+    }
+
+    function renderDetail() {
+      const record = currentRecord();
+      const related = relatedRecord();
+      $("detailFace").textContent = record.face;
+      $("detailFace").classList.toggle("calm", record.moodKey === "calm");
+      $("detailMood").textContent = record.mood;
+      $("detailStrength").textContent = `强度 ${record.strength}/5`;
+      $("detailStrength").classList.toggle("calm", record.moodKey === "calm");
+      $("detailDate").textContent = record.date;
+      $("detailTime").textContent = record.time;
+      $("detailThought").textContent = record.thought || "点这里写下当时的想法";
+      $("detailScene").textContent = record.scene || "点这里选择场景";
+      $("detailDoing").textContent = record.doing || "点这里写下当时在做什么";
+      $("detailNote").textContent = record.note || "点这里补充备注";
+      $("detailFeelings").innerHTML = "";
+      (record.feelings || []).forEach((tag) => {
+        const item = document.createElement("span");
+        item.className = "tag";
+        item.textContent = tag;
+        $("detailFeelings").appendChild(item);
+      });
+      if (!record.feelings || !record.feelings.length) {
+        const item = document.createElement("span");
+        item.className = "detail-value";
+        item.textContent = "点这里选择心情标签";
+        $("detailFeelings").appendChild(item);
+      }
+
+      $("relatedTime").textContent = `${related.date}　${related.time}`;
+      $("relatedFace").textContent = related.face;
+      $("relatedFace").classList.toggle("calm", related.moodKey === "calm");
+      $("relatedMood").textContent = related.mood;
+      $("relatedStrength").textContent = `强度 ${related.strength}/5`;
+      $("relatedStrength").classList.toggle("calm", related.moodKey === "calm");
+      $("relatedThought").textContent = related.thought;
+    }
+
+    function renderEdit() {
+      $("editFace").textContent = editDraft.face;
+      $("editFace").classList.toggle("calm", editDraft.moodKey === "calm");
+      $("editMood").textContent = editDraft.mood;
+      $("editStrength").textContent = `强度 ${editDraft.strength}/5`;
+      $("editStrength").classList.toggle("calm", editDraft.moodKey === "calm");
+      $("editDate").textContent = editDraft.date;
+      $("editTime").textContent = editDraft.time;
+      editThought.value = editDraft.thought || "";
+      editDoing.value = editDraft.doing || "";
+      editNote.value = editDraft.note || "";
+      updateCounts();
+      renderStrength();
+      renderFeelingChips();
+      renderScenes();
+      if (editFocusField) {
+        const target = { thought: editThought, doing: editDoing, note: editNote }[editFocusField];
+        if (target) window.setTimeout(() => target.focus(), 30);
+        editFocusField = "";
+      }
+    }
+
+    function renderStrength() {
+      const wrap = $("strengthControl");
+      wrap.innerHTML = "";
+      for (let i = 1; i <= 5; i += 1) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `strength-dot${i <= editDraft.strength ? " active" : ""}`;
+        button.textContent = i;
+        button.addEventListener("click", () => {
+          editDraft.strength = i;
+          renderEdit();
+        });
+        wrap.appendChild(button);
+      }
+    }
+
+    function renderFeelingChips() {
+      const wrap = $("feelingChips");
+      wrap.innerHTML = "";
+      const merged = Array.from(new Set([...feelingLabels, ...(editDraft.feelings || [])]));
+      merged.forEach((label) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `chip${editDraft.feelings.includes(label) ? " selected" : ""}`;
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          const selected = editDraft.feelings.includes(label);
+          editDraft.feelings = selected ? editDraft.feelings.filter((item) => item !== label) : [...editDraft.feelings, label];
+          renderFeelingChips();
+        });
+        wrap.appendChild(button);
+      });
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "chip";
+      addButton.textContent = "+ 添加";
+      addButton.addEventListener("click", addFeeling);
+      wrap.appendChild(addButton);
+    }
+
+    function renderScenes() {
+      $("sceneSearchText").textContent = editDraft.scene ? `已选择：${editDraft.scene}` : "选择或搜索场景";
+      const wrap = $("sceneGrid");
+      wrap.innerHTML = "";
+      sceneLabels.forEach(([label, icon]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `scene-option${editDraft.scene.includes(label) ? " selected" : ""}`;
+        button.innerHTML = `<span class="scene-option-icon">${icon}</span><span class="scene-option-name">${label}</span>`;
+        button.addEventListener("click", () => {
+          if (label === "自定义") {
+            addScene();
+            return;
+          }
+          editDraft.scene = label === "学校" ? "学校 · 教室" : label;
+          renderScenes();
+        });
+        wrap.appendChild(button);
+      });
+    }
+
+    function updateCounts() {
+      $("thoughtCount").textContent = `${editThought.value.length}/300`;
+      $("doingCount").textContent = `${editDoing.value.length}/300`;
+      $("noteCount").textContent = `${editNote.value.length}/300`;
+    }
+
+    function showToast(message) {
+      window.clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.hidden = false;
+      toast.style.animation = "none";
+      void toast.offsetWidth;
+      toast.style.animation = "";
+      toastTimer = window.setTimeout(() => { toast.hidden = true; }, 1800);
+    }
+
+    function openDetail(recordId) {
+      currentRecordId = recordId;
+      setPage("detail");
+      detailScroll.scrollTop = 0;
+    }
+
+    function openEdit(recordId = currentRecordId, focusField = "") {
+      editingRecordId = recordId;
+      currentRecordId = recordId;
+      editFocusField = focusField;
+      editDraft = structuredClone(records[recordId]);
+      setPage("edit");
+    }
+
+    function saveEdit() {
+      editDraft.thought = editThought.value.trim();
+      editDraft.doing = editDoing.value.trim();
+      editDraft.note = editNote.value.trim();
+      records[editingRecordId] = structuredClone(editDraft);
+      currentRecordId = editingRecordId;
+      localStorage.setItem("emotion-island-records", JSON.stringify(records));
+      setPage("detail");
+      showToast("记录已保存");
+    }
+
+    function addFeeling() {
+      const value = window.prompt("请输入新的感受标签", "难过");
+      const label = value && value.trim();
+      if (!label) return;
+      if (!editDraft.feelings.includes(label)) editDraft.feelings.push(label);
+      renderFeelingChips();
+    }
+
+    function addScene() {
+      const value = window.prompt("请输入自定义场景", "操场");
+      const label = value && value.trim();
+      if (!label) return;
+      editDraft.scene = label;
+      renderScenes();
+    }
+
+    async function shareRecord() {
+      const record = currentRecord();
+      const text = `情绪岛记录：${record.mood}，${record.thought}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "情绪岛记录", text });
+          showToast("分享记录已打开");
+          return;
+        }
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          showToast("分享文字已复制");
+          return;
+        }
+        showToast("分享记录已生成");
+      } catch (error) {
+        showToast("分享已取消");
+      }
+    }
+
+    function exportRecord() {
+      const record = currentRecord();
+      const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `情绪岛-${record.mood}-${record.date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      URL.revokeObjectURL(link.href);
+      link.remove();
+      showToast("记录已导出");
+    }
+
+    function openMoodPicker() {
+      if (isAnimating || page !== "island") return;
+      picker.classList.add("is-open");
+      picker.setAttribute("aria-hidden", "false");
+    }
+
+    function closeMoodPicker() {
+      picker.classList.remove("is-open");
+      picker.setAttribute("aria-hidden", "true");
+    }
+
+    function buildParticles(nextMood) {
+      fxLayer.innerHTML = "";
+      (particlePresets[nextMood] || []).forEach(([left, top, delay]) => {
+        const item = document.createElement("span");
+        item.style.left = `${left}%`;
+        item.style.top = `${top}%`;
+        item.style.animationDelay = `${delay}ms`;
+        fxLayer.appendChild(item);
+      });
+    }
+
+    function switchMood(nextMood) {
+      if (!scenes[nextMood] || isAnimating) return;
+      const previous = screenImage.currentSrc || screenImage.src;
+      const ghost = document.createElement("img");
+      ghost.src = previous;
+      ghost.alt = "";
+      ghost.className = "transition-ghost";
+      ghost.draggable = false;
+      app.appendChild(ghost);
+      closeMoodPicker();
+      mood = nextMood;
+      localStorage.setItem("emotion-island-mood", mood);
+      page = "island";
+      buildParticles(mood);
+      render();
+      isAnimating = true;
+      app.classList.remove("fx-happy", "fx-anxious", "fx-calm", "fx-angry", "fx-sad", "is-changing");
+      void app.offsetWidth;
+      app.classList.add("is-changing", `fx-${mood}`);
+      window.setTimeout(() => {
+        ghost.remove();
+        app.classList.remove("is-changing", "fx-happy", "fx-anxious", "fx-calm", "fx-angry", "fx-sad");
+        fxLayer.innerHTML = "";
+        isAnimating = false;
+      }, 980);
+    }
+
+    plusButton.addEventListener("click", openMoodPicker);
+    soundButton.addEventListener("click", () => showToast("音效已切换"));
+    closePicker.addEventListener("click", closeMoodPicker);
+    navIsland.addEventListener("click", () => setPage("island"));
+    navRecords.addEventListener("click", () => setPage("records"));
+    navProfile.addEventListener("click", () => setPage("profile"));
+    $("recordCardHit").addEventListener("click", () => openDetail("sadToday"));
+    $("recordEditHit").addEventListener("click", () => openDetail("sadToday"));
+    $("recordRowOne").addEventListener("click", () => openDetail("sadToday"));
+    $("recordRowTwo").addEventListener("click", () => openDetail("calmYesterday"));
+    $("recordSortHit").addEventListener("click", () => showToast("已按最新记录排序"));
+    $("detailBackButton").addEventListener("click", () => setPage("records"));
+    $("detailMoreButton").addEventListener("click", () => showToast("更多操作已打开"));
+    $("detailEditButton").addEventListener("click", () => openEdit(currentRecordId));
+    document.querySelectorAll("[data-edit-field]").forEach((button) => {
+      button.addEventListener("click", () => openEdit(currentRecordId, button.dataset.editField));
+    });
+    $("recordMomentButton").addEventListener("click", () => openEdit(relatedRecord().id));
+    $("relatedRecordCard").addEventListener("click", () => openDetail(relatedRecord().id));
+    $("deleteRecordButton").addEventListener("click", () => { setPage("records"); showToast("记录已删除"); });
+    $("shareRecordButton").addEventListener("click", shareRecord);
+    $("exportRecordButton").addEventListener("click", exportRecord);
+    $("editBackButton").addEventListener("click", () => setPage("detail"));
+    $("editSaveButton").addEventListener("click", saveEdit);
+    [editThought, editDoing, editNote].forEach((input) => {
+      input.addEventListener("input", () => {
+        editDraft.thought = editThought.value;
+        editDraft.doing = editDoing.value;
+        editDraft.note = editNote.value;
+        updateCounts();
+      });
+    });
+    picker.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-mood]");
+      if (target) switchMood(target.dataset.mood);
+    });
+    profileHits.forEach((item) => {
+      item.addEventListener("click", () => showToast(item.dataset.toast || "功能已响应"));
+    });
+
+    render();
+  </script>
+</body>
+</html>
