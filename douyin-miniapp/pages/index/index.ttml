@@ -1,0 +1,237 @@
+<view class="app-shell {{shellClass}}" data-page="{{page}}" data-mood="{{mood}}">
+  <image tt:if="{{showScreen}}" class="screen-image" src="{{screenSrc}}" mode="scaleToFill"></image>
+
+  <view class="fx-layer">
+    <view
+      tt:for="{{particles}}"
+      tt:key="index"
+      class="particle"
+      style="left: {{item.left}}%; top: {{item.top}}%; animation-delay: {{item.delay}}ms;"
+    ></view>
+  </view>
+
+  <view tt:if="{{showDetailPage}}" class="detail-page">
+    <view class="ios-bar">
+      <text>9:41</text>
+      <text class="ios-icons">▮▮▮ ⌁ ▰</text>
+    </view>
+    <view class="page-header">
+      <view class="back-button" bindtap="goRecords">‹</view>
+      <view class="page-title">记录详情</view>
+      <view class="menu-button" bindtap="showMoreActions">...</view>
+    </view>
+
+    <scroll-view class="detail-scroll" scroll-y="true">
+      <view class="soft-card detail-card">
+        <view class="record-head">
+          <view class="face {{currentRecord.moodKey === 'calm' ? 'calm' : ''}}">{{currentRecord.face}}</view>
+          <view class="record-head-main">
+            <view class="mood-line">
+              <text>{{currentRecord.mood}}</text>
+              <text class="strength {{currentRecord.moodKey === 'calm' ? 'calm' : ''}}">强度 {{currentRecord.strength}}/5</text>
+            </view>
+            <view class="time">{{currentRecord.date}}　{{currentRecord.time}}</view>
+          </view>
+          <view class="edit-pill" bindtap="openEditRecord">✎ 编辑</view>
+        </view>
+
+        <view class="detail-section" data-field="thought" bindtap="openEditField">
+          <view class="detail-label">当时的想法</view>
+          <view class="detail-value">{{currentRecord.thought || '点这里写下当时的想法'}}</view>
+        </view>
+
+        <view class="detail-section" data-field="feelings" bindtap="openEditField">
+          <view class="detail-label">当时的感受</view>
+          <view class="tag-row">
+            <text tt:for="{{currentRecord.feelings}}" tt:key="*this" class="tag">{{item}}</text>
+            <text tt:if="{{!currentRecord.feelings.length}}" class="detail-value">点这里选择心情标签</text>
+          </view>
+        </view>
+
+        <view class="detail-section" data-field="scene" bindtap="openEditField">
+          <view class="detail-label">当时的场景</view>
+          <view class="scene-row">
+            <text class="scene-icon">⌂</text>
+            <text class="detail-value">{{currentRecord.scene || '点这里选择场景'}}</text>
+            <text class="chevron">›</text>
+          </view>
+        </view>
+
+        <view class="detail-section" data-field="doing" bindtap="openEditField">
+          <view class="detail-label">当时在做什么</view>
+          <view class="detail-value">{{currentRecord.doing || '点这里写下当时在做什么'}}</view>
+        </view>
+
+        <view class="detail-section" data-field="note" bindtap="openEditField">
+          <view class="detail-label">备注</view>
+          <view class="detail-value">{{currentRecord.note || '点这里补充备注'}}</view>
+        </view>
+      </view>
+
+      <view class="soft-card status-card">
+        <view class="status-title">
+          <text>此刻的状态</text>
+          <view class="record-pill" bindtap="recordRelatedMoment">✎ 记录此刻</view>
+        </view>
+        <view class="status-time">{{relatedRecord.date}}　{{relatedRecord.time}}</view>
+        <view class="related-card" bindtap="openRelatedRecord">
+          <view class="face calm">{{relatedRecord.face}}</view>
+          <view class="related-main">
+            <view class="mood-line">
+              <text>{{relatedRecord.mood}}</text>
+              <text class="strength calm">强度 {{relatedRecord.strength}}/5</text>
+            </view>
+            <view class="detail-value">{{relatedRecord.thought}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="soft-card tip-card">
+        <view class="tip-star">★</view>
+        <view class="tip-main">
+          <view class="tip-title">小贴士</view>
+          <view class="tip-text">难过的时候，允许自己慢慢来。深呼吸，给自己一个拥抱吧～</view>
+        </view>
+        <view class="tip-island"></view>
+      </view>
+    </scroll-view>
+
+    <view class="detail-actions">
+      <view class="action-button" bindtap="deleteRecord">⌫ 删除记录</view>
+      <button class="action-button share-button" open-type="share">↗ 分享记录</button>
+      <view class="action-button export" bindtap="exportRecord">⇩ 导出记录</view>
+    </view>
+  </view>
+
+  <view tt:if="{{showEditPage}}" class="edit-page">
+    <view class="ios-bar">
+      <text>9:41</text>
+      <text class="ios-icons">▮▮▮ ⌁ ▰</text>
+    </view>
+    <view class="page-header">
+      <view class="back-button" bindtap="backFromEdit">‹</view>
+      <view class="page-title">编辑记录</view>
+      <view class="save-button" bindtap="saveEditRecord">保存</view>
+    </view>
+
+    <scroll-view class="edit-scroll" scroll-y="true">
+      <view class="soft-card edit-card">
+        <view class="record-head edit-head">
+          <view class="face {{editDraft.moodKey === 'calm' ? 'calm' : ''}}">{{editDraft.face}}</view>
+          <view class="record-head-main">
+            <view class="mood-line">
+              <text>{{editDraft.mood}}</text>
+              <text class="strength {{editDraft.moodKey === 'calm' ? 'calm' : ''}}">强度 {{editDraft.strength}}/5</text>
+            </view>
+            <view class="time">{{editDraft.date}}　{{editDraft.time}}</view>
+            <view class="strength-control">
+              <view
+                tt:for="{{strengthDots}}"
+                tt:key="value"
+                class="strength-dot {{item.active ? 'active' : ''}}"
+                data-value="{{item.value}}"
+                bindtap="setStrength"
+              >{{item.value}}</view>
+            </view>
+          </view>
+        </view>
+
+        <view class="edit-section">
+          <view class="edit-label">当时的想法</view>
+          <view class="field-wrap">
+            <textarea class="edit-textarea" value="{{editDraft.thought}}" maxlength="300" data-field="thought" bindinput="onEditInput" focus="{{focusField === 'thought'}}"></textarea>
+            <text class="counter">{{thoughtCount}}/300</text>
+          </view>
+        </view>
+
+        <view class="edit-section">
+          <view class="edit-label">当时的感受</view>
+          <view class="edit-sub">选择此刻的感受（可多选）</view>
+          <view class="chip-row">
+            <view
+              tt:for="{{feelingTags}}"
+              tt:key="label"
+              class="chip {{item.selected ? 'selected' : ''}}"
+              data-label="{{item.label}}"
+              bindtap="toggleFeeling"
+            >{{item.label}}</view>
+            <view class="chip" bindtap="addFeeling">+ 添加</view>
+          </view>
+        </view>
+
+        <view class="edit-section">
+          <view class="edit-label">当时的场景</view>
+          <view class="scene-search">
+            <text class="scene-icon">⌂</text>
+            <text>{{editDraft.scene ? '已选择：' + editDraft.scene : '选择或搜索场景'}}</text>
+            <text class="chevron">⌄</text>
+          </view>
+          <view class="scene-grid">
+            <view
+              tt:for="{{sceneOptions}}"
+              tt:key="label"
+              class="scene-option {{item.selected ? 'selected' : ''}}"
+              data-label="{{item.label}}"
+              bindtap="selectScene"
+            >
+              <view class="scene-option-icon">{{item.icon}}</view>
+              <view class="scene-option-name">{{item.label}}</view>
+            </view>
+          </view>
+        </view>
+
+        <view class="edit-section">
+          <view class="edit-label">当时在做什么</view>
+          <view class="field-wrap">
+            <textarea class="edit-textarea small" value="{{editDraft.doing}}" maxlength="300" data-field="doing" bindinput="onEditInput" focus="{{focusField === 'doing'}}"></textarea>
+            <text class="counter">{{doingCount}}/300</text>
+          </view>
+        </view>
+
+        <view class="edit-section">
+          <view class="edit-label">备注</view>
+          <view class="field-wrap">
+            <textarea class="edit-textarea small" value="{{editDraft.note}}" maxlength="300" data-field="note" bindinput="onEditInput" focus="{{focusField === 'note'}}"></textarea>
+            <text class="counter">{{noteCount}}/300</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view tt:if="{{showPlus}}" class="hit plus-hit" bindtap="openPicker" aria-label="选择我的情绪"></view>
+  <view tt:if="{{showSound}}" class="hit sound-hit" bindtap="toggleSound" aria-label="切换音效"></view>
+  <view tt:if="{{showNav}}" class="hit nav-hit nav-island" bindtap="goIsland" aria-label="岛屿"></view>
+  <view tt:if="{{showNav}}" class="hit nav-hit nav-records" bindtap="goRecords" aria-label="记录"></view>
+  <view tt:if="{{showNav}}" class="hit nav-hit nav-profile" bindtap="goProfile" aria-label="我的"></view>
+
+  <block tt:if="{{showRecordsHotspots}}">
+    <view class="hit record-card-hit" data-id="sadToday" bindtap="openRecordDetail" aria-label="查看记录详情"></view>
+    <view class="hit record-edit-hit" data-id="sadToday" bindtap="openRecordDetail" aria-label="编辑心情记录"></view>
+    <view class="hit record-row-hit record-row-one" data-id="sadToday" bindtap="openRecordDetail" aria-label="查看悲伤记录"></view>
+    <view class="hit record-row-hit record-row-two" data-id="calmYesterday" bindtap="openRecordDetail" aria-label="查看平静记录"></view>
+    <view class="hit record-sort-hit" bindtap="sortRecords" aria-label="切换记录排序"></view>
+  </block>
+
+  <block tt:if="{{showProfileHotspots}}">
+    <view class="hit profile-action-hit profile-settings-hit" data-toast="设置功能已响应" bindtap="showProfileToast" aria-label="设置"></view>
+    <view class="hit profile-action-hit profile-friends-hit" data-toast="进入好友的岛屿功能已响应" bindtap="showProfileToast" aria-label="进入好友的岛屿"></view>
+    <view class="hit profile-action-hit profile-add-hit" data-toast="添加好友功能已响应" bindtap="showProfileToast" aria-label="添加好友"></view>
+    <view class="hit profile-action-hit profile-message-hit" data-toast="消息通知功能已响应" bindtap="showProfileToast" aria-label="消息通知"></view>
+    <view class="hit profile-action-hit profile-favorites-hit" data-toast="收藏夹功能已响应" bindtap="showProfileToast" aria-label="收藏夹"></view>
+    <view class="hit profile-action-hit profile-trash-hit" data-toast="回收站功能已响应" bindtap="showProfileToast" aria-label="回收站"></view>
+    <view class="hit profile-action-hit profile-help-hit" data-toast="帮助与反馈功能已响应" bindtap="showProfileToast" aria-label="帮助与反馈"></view>
+  </block>
+
+  <view tt:if="{{toastText}}" class="toast">{{toastText}}</view>
+
+  <view tt:if="{{pickerOpen}}" class="picker">
+    <image class="picker-image" src="/assets/picker.jpg" mode="scaleToFill"></image>
+    <view class="hit emotion-hit pick-happy" data-mood="happy" bindtap="selectMood" aria-label="开心"></view>
+    <view class="hit emotion-hit pick-anxious" data-mood="anxious" bindtap="selectMood" aria-label="焦虑"></view>
+    <view class="hit emotion-hit pick-calm" data-mood="calm" bindtap="selectMood" aria-label="平静"></view>
+    <view class="hit emotion-hit pick-angry" data-mood="angry" bindtap="selectMood" aria-label="愤怒"></view>
+    <view class="hit emotion-hit pick-sad" data-mood="sad" bindtap="selectMood" aria-label="悲伤"></view>
+    <view class="hit close-hit" bindtap="closePicker" aria-label="关闭"></view>
+  </view>
+</view>
